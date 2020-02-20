@@ -1,0 +1,26 @@
+{
+  "name": "md-to-af",
+  "description": "MD to AF.",
+  "version": "1.0.0",
+  "license": "MIT",
+  "scripts": {
+    "start": "node server.js",
+    "deploy": "ghpages"
+  },
+  "devDependencies": {
+    "ghpages": "0.0.3",
+    "live-server": "^1.2.0"
+  },
+  "keywords": [
+    "aframe",
+    "aframe-example",
+    "aframe-boilerplate",
+    "aframe-scene",
+    "webvr",
+    "vr"
+  ],
+  "dependencies": {
+    "external-ip": "^2.1.1",
+    "live-server-https": "0.0.2"
+  }
+}
