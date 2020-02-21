@@ -236,6 +236,11 @@ class Malloci
         return wall
     }
 
+    JumpTo(sectionHeader)
+    {
+
+    }
+
     Partition()
     {
         let rooms = this._tree.rooms
