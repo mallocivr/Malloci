@@ -19,9 +19,3 @@ Here is a room with subsections
 ### Subsection 2
 
 ## Room 4
-
-## Room 5
-
-## Room 6
-
-## Room 7

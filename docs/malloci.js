@@ -3,16 +3,14 @@ class Malloci
     constructor(markDown, depth)
     {
         this._tree = this.MDtoJSON(markDown)
+        //this.GetArtifacts()
         this._width = 5 * this._tree.rooms.length
         this._depth = depth
         this._scene = document.querySelector("a-scene")
-
     }
 
     MDtoJSON(markDown)
     {
-        console.log(markDown);
-
         let exJSON = {}
         let subJSON = {}
         let level = ""
@@ -83,6 +81,19 @@ class Malloci
         return exJSON
     }
 
+    GetArtifacts()
+    {
+        const xmlhttp = new XMLHttpRequest();
+        xmlhttp.onreadystatechange = function(){
+            this._tree = xmlhttp.responseText;
+            console.log(this._tree)
+        };
+        xmlhttp.open("POST","http://127.0.0.1:5000/generate",false);
+        xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+        xmlhttp.send(JSON.stringify(this._tree));
+
+    }
+
     SpiralMuseum(radius)
     {
         this._museum = document.createElement('a-entity')
@@ -136,17 +147,6 @@ class Malloci
         // build east wall
         this._museum.appendChild(this.Wall('east', this._depth, 0, this._depth, 90))
 
-        let floor = document.createElement('a-plane')
-
-        floor.setAttribute('position', {x: this._width/2, y: 0, z: this._depth/2})
-        floor.setAttribute('rotation', {x: -90, y: 0, z: 0})
-        floor.setAttribute('color', '#7BC8A4')
-        floor.setAttribute('width', this._width)
-        floor.setAttribute('height', this._depth)
-        floor.setAttribute('class', 'collidable')
-
-        this._scene.appendChild(floor)
-
         this.Partition()
 
         this._scene.appendChild(this._museum)
@@ -158,10 +158,12 @@ class Malloci
         let wall = document.createElement('a-entity')
 
         plaster.setAttribute('depth', 0.1)
-        plaster.setAttribute('height', 3)
+        plaster.setAttribute('height', 4)
         plaster.setAttribute('width', length)
-        plaster.setAttribute('position', {x: length/2, y: 1.5, z: 0})
-        plaster.setAttribute('color', '#EDEDED')
+        plaster.setAttribute('position', {x: length/2, y: 2, z: 0})
+        plaster.setAttribute('color', '#f4f2d7')
+        plaster.setAttribute('material', 'shader: flat; src: url(textures/wall2.jpg)')
+        plaster.setAttribute("shadow", '')
 
         wall.appendChild(plaster)
 
@@ -191,9 +193,13 @@ class Malloci
         }
 
         plaster.setAttribute('depth', 0.1)
-        plaster.setAttribute('height', 3)
+        plaster.setAttribute('height', 4)
         plaster.setAttribute('width', doorWay)
-        plaster.setAttribute('position', {x: doorPos/2, y: 1.5, z: 0})
+        plaster.setAttribute('position', {x: doorPos/2, y: 2, z: 0})
+        plaster.setAttribute('color', '#f4f2d7')
+        plaster.setAttribute('material', 'shader: flat; src: url(textures/wall2.jpg)')
+        plaster.setAttribute("shadow", '')
+
 
         wall.appendChild(plaster)
 
@@ -223,9 +229,13 @@ class Malloci
         }
 
         plaster.setAttribute('depth', 0.1)
-        plaster.setAttribute('height', 3)
+        plaster.setAttribute('height', 4)
         plaster.setAttribute('width', doorWay)
-        plaster.setAttribute('position', {x: doorPos/2, y: 1.5, z: 0})
+        plaster.setAttribute('position', {x: doorPos/2, y: 2, z: 0})
+        plaster.setAttribute('color', '#f4f2d7')
+        plaster.setAttribute('material', 'shader: flat; src: url(textures/wall2.jpg)')
+        plaster.setAttribute("shadow", '')
+
 
         wall.appendChild(plaster)
 
@@ -234,6 +244,23 @@ class Malloci
         wall.setAttribute('rotation', {x: 0, y: rotation, z: 0})
 
         return wall
+    }
+
+    floor(width, depth, roomNum)
+    {
+        let floor = document.createElement('a-plane')
+        roomNum--
+
+        floor.setAttribute('position', {x: width/2 + width * roomNum, y: 0, z: depth/2})
+        floor.setAttribute('rotation', {x: -90, y: 0, z: 0})
+        floor.setAttribute('color', '#d7bd98')
+        floor.setAttribute('material', 'shader: flat; src: url(textures/floor.jpg)')
+        floor.setAttribute('width', width)
+        floor.setAttribute('height', depth)
+        floor.setAttribute('class', 'collidable')
+        floor.setAttribute("shadow", '')
+
+        return floor
     }
 
     JumpTo(sectionHeader)
@@ -248,17 +275,24 @@ class Malloci
         console.log("Hall width: " + cor_width);
         
 
-        for(let roomNum = 1; roomNum < rooms.length; roomNum++)
+        for(let roomNum = 1; roomNum <= rooms.length; roomNum++)
         {
             let room = rooms[roomNum-1]
             let subrooms = room.subRooms
             let cor_depth = this._depth / subrooms.length
 
-            let wallID = room.name.replace(" ", '_') + "_west_wall"
-            let roomWall = this.WallWithDoorWay(wallID, roomNum, 2, this._depth, cor_width * roomNum, 0, 270)
+            if (roomNum < rooms.length)
+            {
+                let wallID = room.name.replace(" ", '_') + "_west_wall"
+                let roomWall = this.WallWithDoorWay(wallID, roomNum, 2, this._depth, cor_width * roomNum, 0, 270)
 
-            this._museum.appendChild(roomWall)
+                this._museum.appendChild(roomWall)
 
+            }
+            let roomFloor = this.floor(cor_width, this._depth, roomNum)
+            this._museum.appendChild(roomFloor)
+
+            
             for(let subRoomNum = 1; subRoomNum < subrooms.length; subRoomNum++)
             {
                 let subroom = subrooms[subRoomNum-1]
