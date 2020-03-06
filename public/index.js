@@ -1,5 +1,7 @@
 let md = ""
 
+xmlhttp = new XMLHttpRequest()
+
 xmlhttp.onreadystatechange = function(){
     md = xmlhttp.responseText;
 };
