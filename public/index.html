@@ -5,17 +5,40 @@
     <title>Malloci</title>
     <meta name="description" content="MD to AF">
     <script src="https://aframe.io/releases/1.0.4/aframe.min.js"></script>
-    <script src="https://rawgit.com/fernandojsg/aframe-teleport-controls/master/dist/aframe-teleport-controls.min.js"></script>  
+    <script src="https://rawgit.com/fernandojsg/aframe-teleport-controls/master/dist/aframe-teleport-controls.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.0/dist/aframe-extras.min.js"></script> 
+    <script src="https://supereggbert.github.io/aframe-htmlembed-component/dist/build.js"></script>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/default.min.css">
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
     <link rel="stylesheet" type="text/css" href="style.css">
   </head>
   <body>
-    <a-scene embedded>
-      <a-entity id="rig" position="2 0 1" rotation="0 180 0">
-        <a-camera id="camera"></a-camera>
-        <a-entity oculus-touch-controls="hand: left" teleport-controls="button: trigger; cameraRig: #rig; teleportOrigin: #camera;"></a-entity>
-        <a-entity oculus-touch-controls="hand: right" teleport-controls="button: trigger; cameraRig: #rig; teleportOrigin: #camera;"></a-entity>
-      </a-entity>
-    </a-scene>
+    <div class="container">
+      <div id="article"></div>
+    </div>
+    <div class="exhibit">
+      <a-scene embedded>
+        <a-assets>
+          <a-mixin id="checkpoint"></a-mixin>
+          <a-mixin id="checkpoint-hovered" color="#6CEEB5"></a-mixin>
+        </a-assets>
+        <a-light position="0 6 0" rotation="0 0 45"></a-light>
+        <a-entity id="rig"
+                  movement-controls
+                  position="2 0 1" 
+                  rotation="0 180 0">
+          <a-camera id="camera"
+          look-controls="pointerLockEnabled: true">
+          </a-entity>
+        </a-camera>
+          <a-entity oculus-touch-controls="hand: left" teleport-controls="button: trigger; cameraRig: #rig; teleportOrigin: #camera;"></a-entity>
+          <a-entity oculus-touch-controls="hand: right" teleport-controls="button: trigger; cameraRig: #rig; teleportOrigin: #camera;"></a-entity>
+        </a-entity>
+        <a-sky src="textures/sky.jpg" position="0 -70 0"></a-sky>
+      </a-scene>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="assets.js"></script>
     <script src="malloci.js"></script>
     <script src="index.js"></script>
   </body>

@@ -1,0 +1,34 @@
+# Why AirBnB is NOT a Design Platform
+
+There are a couple of big names coming to mind when thinking about market disruption, but when it comes to housing, AirBnB is guaranteed to be the top association. With 150 million active users as of February 2020, it is officially the biggest platform offering short and middle-length rentals. As more and more listings are coming up daily, AirBnB is continuing its upward trajectory towards total domination of the housing market and is already the subject of numerous scientific studies trying to explain its phenomenon. 
+
+## DESIGN IN A NUTSHELL
+
+As in all cases of a business success story, it all comes down to an idea, space, and time. And, as some would argue, ingenuine design. In short, AirBnB connects property owners with travelers in need of a place to stay. The search, booking and ranking process happens seamlessly through a sleekly designed platform. Properties are easy to enlist, find, and ultimately become transformed into a personal safe haven, even if for a day or two. Once powerful insight - the realization that people would much rather enjoy the sense of excitement and autonomy by handling their own lodging, rather than staying in the same hotels over and over again - has become the fundamental block of AirBnB’s mission to build that flexible model into an existing rental market infrastructure. And the rate of customer adoption speaks loudly for the fact that they have succeeded. 
+
+Where does success lie? According to the qualitative studies on that topic, the role of the AirBnB platform is three fold:
+
+1. it takes away the discomfort of monetary exchange, 
+2. it facilitates conflicts on the sides of the hosts and visitors, and 
+3. it acts as a Third Party to provide additional assurance and trust.
+
+The usual hustle of having to face an indebted visitor who prolonged their stay, dealing with unexpected damage or discovering that the property is nothing like expected are all predominantly a thing of a past, thanks to the regulatory nature of the service.
+
+## FLIPSIDE
+
+That, however, carries some serious consequences, which the founders may have not had anticipated when creating the platform. With great design comes great responsibility, as well as inherent concerns for the added value of the product or service. Disrupting the renting experience through an omnipotent booking platform carries a very important tradeoff - it removes empathy. 
+
+In a situation where a visitor is on a hunt for the best deals and the homeowner wants to capitalize on their property, searching for temporary housing becomes a game of perks and losses. As a result of a rather pragmatic hunting process, the guests receive exactly “what it says on the box” but nothing beyond that, and the hosts receive the satisfaction from making their property available to strangers from positive host ratings. That in itself is in an interesting contrast with platforms based on non-monetary reciprocity such as Couchsurfing, whose guests feel somehow obliged to “pay back” for a piece of couch or mattress with a meal or a gift brought from their own country. According to an influential anthropologist Marcel Mauss, a gift of any sort - in that case, free or almost-free housing - is inherently tied to the promise of reciprocity.
+
+## EMPATHY KILLER
+
+By removing the element of face-to-face interaction and not actively trying to encourage empathy between hosts and guests, AirBnB created an ongoing rift in the property market by associating a shared space with something inherently transactional. For that reason, I argue that, despite popular belief, it is not a design company. Empathy for the user is one of the key pillars of human-centric design. In that case, using the brain power of platoons of UX/UI designers to make the online booking process as seamless, as possible, is only one side of the coin. These designers are partially responsible for the phenomenon driving inflation of home prices and forcing local renters to be displaced as more and more properties are being taken off the long-term lease market to become newly refurbished listings. 
+
+One could argue that what is happening is not a direct ripple from the involvement of AirBnB - quite the contrary, the emergence of the platform provided an alternative solution to millions of users thus making travel more accessible, while fighting the hotel monopolies. The effect that the company had on transforming the renting experience is undeniable. However, I believe that it is the moral duty of us, designers, to issue a call to action whenever a construct that has been designed to address certain issues impacts tremendously other aspects of our everyday life. The growing numbers of “Fit-to-market” Airbnbs - lodgings constructed in someone’s garage or backyard to offer the lowest price option for short-term travelers - and properties managed through the “self-check in” suggest crowding out of intrinsic motivations of guests and hosts alike to connect, which was AirBnB’s mission in the first place. 
+
+## DESIGN RECOMMENDATIONS
+
+But there is no need to despair. In Design Thinking, maintaining an enthusiastic outlook is of paramount importance. Empathy may not be created without a deep understanding of the motivations and experiences of both sides, but it can be nudged and fostered in certain environments. The role of a good design platform is to create these environments. The rigid control that AirBnB holds over certain aspects - such as the service fee, check in time, or cancellation policy, to name a few - suggest that the platform has the power to hold its users accountable. Addition of empathy-building blocks - such as personalized greeting and thank you notes, sightseeing recommendations or shared meals - has the potential to make sure that more than a handful of hosts and guests go an extra mile to make the experience unforgettable and valuable. Of course, the platform would not be enforcing any specific acts of empathy - that would kill the initiative and autonomy it needs to flourish. A simple addition of an “empathy checklist” to the rating process would be enough to ensure that some thought has been put into the transaction, and that the hosts concerned only with making a quick dollar would not make it to the top of the rankings. 
+
+In short, it is sometimes hard to see the impact that a product or service has, once it has obtained a label of “seamless design” and is in the process of receiving consecutive updates. To gauge the real dimensions of the change that it is driving it is necessary to read between the lines of code and dig beyond the interface level. **Empathy might not necessarily be something that can be designed - but design can be used when creating environments that have the power to foster it.** And where is the better place to start than under someone’s own roof? 
+

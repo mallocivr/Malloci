@@ -1,3 +1,53 @@
-.hide-scene{
-    visibility: hidden;
+#article > * > img {
+    width: 100%
+}
+
+/* VR HTML Embed grid system */
+.frame {
+    width: 1280px;
+}
+
+.img-frame {
+    text-align: center;
+}
+
+.vr-col-1 {
+    width: 15%;
+    margin: 0 42.5%;
+}
+
+.vr-col-2 {
+    width: 30%;
+    margin: 0 35%;
+}
+
+.vr-col-3 {
+    width: 45%;
+    margin: 0 27.5%;
+}
+
+.vr-col-4 {
+    width: 60%;
+    margin: 0 20%;
+}
+
+.vr-col-5 {
+    width: 75%;
+    margin: 0 12.5%;
+}
+
+.vr-col-6 {
+    width: 90%;
+    margin: 0 5%;
+}
+
+.vr-img{
+    margin:  0 auto;
+    display: inline-block;
+}
+
+.vr-img > img {
+    max-height: 680px;
+    object-fit: contain;
+    /* object-position: 50% 50%; */
 }
