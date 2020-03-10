@@ -4,7 +4,8 @@
 
 /* VR HTML Embed grid system */
 .frame {
-    width: 1680px;
+    width: 1024px;
+    font-size: 20pt;
 }
 
 .img-frame {
@@ -13,32 +14,32 @@
 
 .vr-col-1 {
     width: 15%;
-    margin: 0 42.5%;
+    margin: 5% 42.5%;
 }
 
 .vr-col-2 {
     width: 30%;
-    margin: 0 35%;
+    margin: 5% 35%;
 }
 
 .vr-col-3 {
     width: 45%;
-    margin: 0 27.5%;
+    margin: 5% 27.5%;
 }
 
 .vr-col-4 {
     width: 60%;
-    margin: 0 20%;
+    margin: 5% 20%;
 }
 
 .vr-col-5 {
     width: 75%;
-    margin: 0 12.5%;
+    margin: 5% 12.5%;
 }
 
 .vr-col-6 {
     width: 90%;
-    margin: 0 5%;
+    margin: 5% 5%;
 }
 
 .vr-img{
@@ -49,5 +50,4 @@
 .vr-img > img {
     max-height: 680px;
     object-fit: contain;
-    /* object-position: 50% 50%; */
 }

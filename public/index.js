@@ -11,7 +11,7 @@ xmlhttp.send();
 document.getElementById('article').innerHTML =
       marked(md);
 
-const museum = new Malloci(md, 16)
+const museum = new Malloci(md, 16, 8)
 
 //museum.SpiralMuseum(30)
 museum.SquareMuseum()

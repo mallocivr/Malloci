@@ -1,10 +1,10 @@
 class Malloci 
 {
-    constructor(markDown, depth)
+    constructor(markDown, depth, exWidth)
     {
         this._tree = this.MDtoJSON(markDown)
         //this.GetArtifacts()
-        this._width = 5 * this._tree.rooms.length
+        this._width = exWidth * this._tree.rooms.length
         this._depth = depth
         this._scene = document.querySelector("a-scene")
         this._rig = document.getElementById("rig")
@@ -202,8 +202,22 @@ class Malloci
 
     }
     
-    InstantiateArtifact(artifactsArray, roomWidth, roomDepth)
+    InstantiateArtifacts(roomNum, numOfRooms, artifactsArray, roomWidth, roomDepth)
     {
+
+        let room = document.createElement("a-entity")
+        room.setAttribute('id', "room_" + roomNum)
+
+
+        if(roomNum % 2)
+        {
+            room.setAttribute('position', {x: roomWidth * (roomNum - 1), y: 0, z: 0})
+        }
+        else
+        {
+            room.setAttribute('position', {x: roomWidth * roomNum, y: 0, z: roomDepth})
+            room.setAttribute('rotation', {x: 0, y: 180, z: 0})
+        }
         
         for(let i = 1; i <= artifactsArray.length; i++)
         {
@@ -216,7 +230,32 @@ class Malloci
             let wall_z = 0
             let rot_y = 90
 
-            if(i % 2)
+            
+            if(i == 1 & roomNum % 2 && roomNum != 1)
+            {
+                wall_x = roomWidth/2
+                wall_z = 0.1
+                rot_y = 0
+            }
+            else if(i == 2 & !(roomNum % 2))
+            {
+                wall_x = roomWidth/2
+                wall_z = 0.1
+                rot_y = 0
+            }
+            else if (i == artifactsArray.length & roomNum % 2)
+            {
+                wall_x = roomWidth/2
+                wall_z = roomDepth - 0.1
+                rot_y = 180
+            }
+            else if (i == artifactsArray.length - 1 & !(roomNum % 2) & roomNum != numOfRooms)
+            {
+                wall_x = roomWidth/2
+                wall_z = roomDepth - 0.1
+                rot_y = 180
+            }
+            else if(i % 2)
             {
                 divisor = divisor % 2 ? divisor + 1 : divisor
                 wall_z = (roomDepth)/divisor * i
@@ -245,33 +284,35 @@ class Malloci
             let htmlEmbed = document.createElement('a-entity')
             htmlEmbed.className = "frame"
             htmlEmbed.setAttribute("htmlembed", "PPU:256")
-            htmlEmbed.setAttribute("position", {x: 0, y: 0, z: 0.052})
+            htmlEmbed.setAttribute("position", {x: 0, y: 0, z: 0.055})
             let div = document.createElement('div')
             let pre = document.createElement("pre")
             let code = document.createElement("code")
-
 
             switch(artifactObject.type)
             {
                 case 'image':
                     htmlEmbed.classList.add("img-frame")
+                    htmlEmbed.setAttribute("id", artifactObject.alt)
                     div.className = "vr-img"
+                    htmlEmbed.className = "img-frame"
                     let image = document.createElement('img')
                     image.setAttribute('src', artifactObject.src)
                     div.appendChild(image)
                     break
                 case 'block quote':
-                    div.className = "vr-col-" + Math.floor(artWidth)
+                    div.className = "vr-col-" + (7 - Math.floor(artWidth))
+                    htmlEmbed.setAttribute("id", "block_quote")
                     div.innerHTML += artifactObject.text
                     break
                 case 'code':
-                    div.className = "vr-col-" + Math.floor(artWidth)
+                    div.className = "vr-col-" + (7 - Math.floor(artWidth))
                     code.innerHTML += artifactObject.code
                     pre.appendChild(code)
                     div.appendChild(pre)
                     break
                 case 'code block':
-                    div.className = "vr-col-" + Math.floor(artWidth)
+                    div.className = "vr-col-" + (7 - Math.floor(artWidth))
                     code.className = "language-" + artifactObject.lang
                     code.innerHTML += artifactObject.code
                     pre.appendChild(code)
@@ -279,15 +320,26 @@ class Malloci
                     break
             }
 
+            if(AFRAME.utils.device.isMobile())
+            {
+                let checkpoint = this.InitCheckPoint({x: 0, y: -(artHeight/2 + 0.5), z: 2})
+                artifact.appendChild(checkpoint)
+            }
+
+            htmlEmbed.addEventListener('rendered', () =>{
+                let box = new THREE.Box3().setFromObject(htmlEmbed.object3D);
+                canvas.setAttribute("height", box.getSize().y)
+                canvas.setAttribute("width", box.getSize().z != 0 ? box.getSize().z : box.getSize().x)
+            })
+
             htmlEmbed.appendChild(div)
             artifact.appendChild(htmlEmbed)
 
-            this._museum.appendChild(artifact)
+            room.appendChild(artifact)
         }
 
+        this._museum.appendChild(room)
     }
-
-
 
     SpiralMuseum(radius)
     {
@@ -504,25 +556,23 @@ class Malloci
         
     }
 
-    InitCheckPoints(width, depth, roomNum, checkPointsPerRoom)
+    initWalkWay(width, depth, roomNum, checkPointsPerRoom)
     {
         roomNum--
         for(let i = 1; i <= checkPointsPerRoom; i++)
         {
-            let checkpoint = document.createElement('a-cylinder')
-            checkpoint.setAttribute("checkpoint", '')
-            checkpoint.setAttribute("height", 0.01)
-            checkpoint.setAttribute("radius", 0.4)
-            checkpoint.setAttribute('position', {x: width/2 + width * roomNum, y: 0, z: ((depth-1)/checkPointsPerRoom) * i})
-            this._museum.appendChild(checkpoint)
+            this._museum.appendChild(this.InitCheckPoint({x: width/2 + width * roomNum, y: 0, z: ((depth)/(checkPointsPerRoom * 2)) * i}))
         }
-
-
     }
 
-    JumpTo(sectionHeader)
+    InitCheckPoint(position)
     {
-
+        let checkpoint = document.createElement('a-cylinder')
+        checkpoint.setAttribute("checkpoint", '')
+        checkpoint.setAttribute("height", 0.01)
+        checkpoint.setAttribute("radius", 0.4)
+        checkpoint.setAttribute('position', position)
+        return checkpoint
     }
 
     Partition()
@@ -543,14 +593,14 @@ class Malloci
                 this._museum.appendChild(roomWall)
             }
 
-            this.InstantiateArtifact(room.artifacts, cor_width, this._depth)
+            this.InstantiateArtifacts(roomNum, rooms.length, room.artifacts, cor_width, this._depth)
             
             let roomFloor = this.floor(cor_width, this._depth, roomNum)
             this._museum.appendChild(roomFloor)
 
             if(AFRAME.utils.device.isMobile())
             {
-                this.InitCheckPoints(cor_width, this._depth, roomNum, 5)
+                this.initWalkWay(cor_width, this._depth, roomNum, 2)
             }
             for(let subRoomNum = 1; subRoomNum < subrooms.length; subRoomNum++)
             {
