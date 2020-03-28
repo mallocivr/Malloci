@@ -1,15 +1,14 @@
 class Malloci 
 {
-    constructor(markDown, depth, exWidth)
+    constructor(markDown, exWidth)
     {
         this._tree = this.MDtoJSON(markDown)
-        //this.GetArtifacts()
-        this._width = exWidth * this._tree.rooms.length
-        this._depth = depth
+        this._roomWidth = exWidth
         this._scene = document.querySelector("a-scene")
         this._rig = document.getElementById("rig")
         this._camera = document.getElementById("camera")
-
+        this._assets = new Assets(null)
+        this.rng = new Math.seedrandom(this._tree.name);
     }
 
     GetDevice()
@@ -19,7 +18,7 @@ class Malloci
             this._rig.setAttribute("movement-controls", "controls: checkpoint")
             this._rig.setAttribute("checkpoint-controls", "mode: teleport")
             let cursor = document.createElement("a-entity")
-            cursor.setAttribute("cursor", '')
+            cursor.setAttribute("cursor", "fuse: true; fuseTimeout: 500")
             cursor.setAttribute("position", {x: 0, y: 0, z: -1})
             cursor.setAttribute("geometry", "primitive: ring; radiusInner: 0.01; radiusOuter: 0.02;")
             cursor.setAttribute("material", "color: #CCC; shader: flat;")
@@ -30,6 +29,8 @@ class Malloci
     MDtoJSON(markDown)
     {
         let exJSON = {}
+        exJSON.rooms = []
+
         let subJSON = {}
         let artifacts = []
 
@@ -48,8 +49,13 @@ class Malloci
             let words = line.split(" ")
 
             // Headings
-            if (words[0].charAt(0) == "#")
+            if (words[0].charAt(0) == "#" && !in_code)
             {
+                if(words[0] == "###") 
+                    return
+
+                level = words.shift()
+
                 if(subJSON.name != null)
                 {
                     subJSON.text = text
@@ -58,14 +64,9 @@ class Malloci
                     text = ""
                     artifacts = []
 
-                    if(level == "##")
+                    if(level == "#" || level == "##")
                     {
                         exJSON.rooms.push(subJSON)
-                        subJSON = {}
-                    }
-                    if(level == "###")
-                    {
-                        exJSON.rooms[exJSON.rooms.length - 1].subRooms.push(subJSON)
                         subJSON = {}
                     }
                 }
@@ -77,29 +78,17 @@ class Malloci
                     text = ""
                     artifacts = []
                 }
-                level = words.shift()
                 if (level == "#")
                 {
                     exJSON.name = words.join(" ")
-                    exJSON.rooms = []
                 }
-                if (level == "##")
-                {
-                    subJSON.name = words.join(" ")
-                    subJSON.subRooms = []
-                }
-                if (level == "###")
-                {
-                    subJSON.name = words.join(" ")
-                }
+                subJSON.name = words.join(" ")
             }
 
             // Block Quotes
-            if (words[0].charAt(0) == ">")
+            if (words[0].charAt(0) == ">" && !in_code)
             {
-                block_quote += words.join(" ").replace(">", "").replace(/(^[\s]+|[\s]+$)/, "\n")
-                console.log(block_quote);
-                                
+                block_quote += words.join(" ").replace(">", "").replace(/(^[\s]+|[\s]+$)/, "\n")                                
             }
             else if (block_quote != "")
             {
@@ -132,7 +121,7 @@ class Malloci
             }            
 
             // Images
-            if (words[0].charAt(0) == "!")
+            if (words[0].charAt(0) == "!" && !in_code)
             {
                 artifacts.push(this.ParseArtifact(line, "image"))
             }
@@ -149,17 +138,9 @@ class Malloci
             text = ""
             artifacts = []
 
-            if(level == "##")
-            {
-                exJSON.rooms.push(subJSON)
-                subJSON = {}
-            }
-            if(level == "###")
-            {
-                exJSON.rooms[exJSON.rooms.length - 1].subRooms.push(subJSON)
-                subJSON = {}
-            }
-        }
+            exJSON.rooms.push(subJSON)
+            subJSON = {}
+        }        
         return exJSON
     }
 
@@ -189,156 +170,130 @@ class Malloci
         return artifact
     }
 
-    GetArtifacts()
+    async GetArtifacts(url)
     {
-        const xmlhttp = new XMLHttpRequest();
-        xmlhttp.onreadystatechange = function(){
-            this._tree = xmlhttp.responseText;
-            console.log(this._tree)
-        };
-        xmlhttp.open("POST","http://127.0.0.1:5000/generate",false);
-        xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        xmlhttp.send(JSON.stringify(this._tree));
+        const response = await fetch(url, {
+            method: 'POST', // *GET, POST, PUT, DELETE, etc.
+            mode: 'cors', // no-cors, *cors, same-origin
+            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+            credentials: 'same-origin', // include, *same-origin, omit
+            headers: {
+              'Content-Type': 'application/json'
+              // 'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            redirect: 'follow', // manual, *follow, error
+            referrerPolicy: 'no-referrer', // no-referrer, *client
+            body: JSON.stringify(this._tree) // body data type must match "Content-Type" header
+          });
+          this._tree = await response.json()          
+          return this._tree
+    }
+
+    InstantiateArt(artObj, width)
+    {
+        let artifact = document.createElement('a-entity')
+        let canvas = document.createElement('a-box')
+
+        let artHeight = width < 2.75 ? width : 2.75            
+
+        canvas.setAttribute("height", artHeight)
+        canvas.setAttribute("width", width)
+        canvas.setAttribute("depth", 0.1)
+        canvas.setAttribute("color", "#e4e0d5")
+        canvas.setAttribute('material', 'shader: flat; src: url(textures/canvas.jpeg)')
+        artifact.appendChild(canvas)
+
+        let htmlEmbed = document.createElement('a-entity')
+        htmlEmbed.className = "frame"
+        htmlEmbed.setAttribute("htmlembed", "PPU:256")
+        htmlEmbed.setAttribute("position", {x: 0, y: 0, z: 0.055})
+        let div = document.createElement('div')
+        let pre = document.createElement("pre")
+        let code = document.createElement("code")
+
+        let artClassNum =  6 - Math.floor(width)
+
+        switch(artObj.type)
+        {
+            case 'image':
+                htmlEmbed.classList.add("img-frame")
+                htmlEmbed.setAttribute("id", artObj.alt)
+                div.className = "vr-img"
+                htmlEmbed.className = "img-frame"
+                let image = document.createElement('img')
+                image.setAttribute('src', artObj.src)
+                div.appendChild(image)
+                break
+            case 'word art':                    
+                div.className = "vr-col-" + artClassNum
+                div.innerHTML += artObj.html
+                break
+            case 'block quote':
+                div.className = "vr-col-" + artClassNum
+                div.innerHTML += artObj.text
+                break
+            case 'code':
+                div.className = "code"
+                code.innerHTML += artObj.code
+                pre.appendChild(code)
+                div.appendChild(pre)
+                break
+            case 'code block':
+                div.className = "code"
+                code.className = "language-" + artObj.lang
+                code.innerHTML += artObj.code
+                pre.appendChild(code)
+                div.appendChild(pre)
+                break
+        }
+
+        if(AFRAME.utils.device.isMobile())
+        {
+            let checkpoint = this.InitCheckPoint({x: 0, y: -2, z: 2})
+            artifact.appendChild(checkpoint)
+        }
+
+        artifact.addEventListener('rendered', () =>{
+            let box = new THREE.Box3().setFromObject(htmlEmbed.object3D);
+            canvas.setAttribute("height", box.getSize().y)
+            canvas.setAttribute("width", Math.floor(box.getSize().z) != 0 ? box.getSize().z : box.getSize().x)
+        })
+
+        htmlEmbed.appendChild(div)
+        artifact.appendChild(htmlEmbed)
+
+        return artifact
 
     }
-    
-    InstantiateArtifacts(roomNum, numOfRooms, artifactsArray, roomWidth, roomDepth)
+
+    HangArt(leftWallEntity, rightWallEntity, artifacts)
     {
+        let divisor = artifacts.length + 2 > 4 ? artifacts.length + 2 : 4
+        // divisor = divisor % 2 ? divisor - 1 : divisor
 
-        let room = document.createElement("a-entity")
-        room.setAttribute('id', "room_" + roomNum)
+        let leftLength = leftWallEntity.querySelector('.scenery').getAttribute("width")
+        let rightLength = rightWallEntity.querySelector('.scenery').getAttribute("width")
 
+        let artWidthLeft = leftLength/divisor
+        let artWidthRight = rightLength/divisor
 
-        if(roomNum % 2)
+        for (let i = 1; i <= artifacts.length; i++)
         {
-            room.setAttribute('position', {x: roomWidth * (roomNum - 1), y: 0, z: 0})
-        }
-        else
-        {
-            room.setAttribute('position', {x: roomWidth * roomNum, y: 0, z: roomDepth})
-            room.setAttribute('rotation', {x: 0, y: 180, z: 0})
-        }
-        
-        for(let i = 1; i <= artifactsArray.length; i++)
-        {
-            let artifactObject = artifactsArray[i-1]
-            let artifact = document.createElement('a-entity')
-            let canvas = document.createElement('a-box')
-
-            let divisor = artifactsArray.length >= 2 ? artifactsArray.length : 2
-            let wall_x = 0.1
-            let wall_z = 0
-            let rot_y = 90
-
-            
-            if(i == 1 & roomNum % 2 && roomNum != 1)
+            let artObj = artifacts[i-1]
+            if (i % 2)
             {
-                wall_x = roomWidth/2
-                wall_z = 0.1
-                rot_y = 0
-            }
-            else if(i == 2 & !(roomNum % 2))
-            {
-                wall_x = roomWidth/2
-                wall_z = 0.1
-                rot_y = 0
-            }
-            else if (i == artifactsArray.length & roomNum % 2)
-            {
-                wall_x = roomWidth/2
-                wall_z = roomDepth - 0.1
-                rot_y = 180
-            }
-            else if (i == artifactsArray.length - 1 & !(roomNum % 2) & roomNum != numOfRooms)
-            {
-                wall_x = roomWidth/2
-                wall_z = roomDepth - 0.1
-                rot_y = 180
-            }
-            else if(i % 2)
-            {
-                divisor = divisor % 2 ? divisor + 1 : divisor
-                wall_z = (roomDepth)/divisor * i
+                let artifact = this.InstantiateArt(artObj, artWidthLeft)
+                leftWallEntity.appendChild(artifact)
+                artifact.setAttribute("position",{x:  artWidthLeft + artWidthLeft * i, y: 2, z: 0.2})
             }
             else
             {
-                divisor = divisor % 2 ? divisor - 1 : divisor
-                wall_x = roomWidth - 0.1
-                wall_z = (roomDepth)/divisor * (i - 1)
-                rot_y = -90
+                let artifact = this.InstantiateArt(artObj, artWidthRight)
+                rightWallEntity.appendChild(artifact)
+                artifact.setAttribute("position",{x:  artWidthRight + artWidthRight * (i - 1), y: 2, z: -0.2})
+                artifact.setAttribute("rotation", {x: 0, y: 180, z: 0})
             }
-            
-            let artWidth = roomDepth/divisor <= roomDepth/2 ? roomDepth/divisor : roomDepth/2
-            let artHeight = artWidth < 2.75 ? artWidth : 2.75
-
-            artifact.setAttribute("position", {x: wall_x, y: artHeight/2 + 0.5, z: wall_z})
-            artifact.setAttribute("rotation", {x: 0, y: rot_y, z: 0})
-
-            canvas.setAttribute("height", artHeight)
-            canvas.setAttribute("width", artWidth)
-            canvas.setAttribute("depth", 0.1)
-            canvas.setAttribute("color", "#e4e0d5")
-            canvas.setAttribute('material', 'shader: flat; src: url(textures/canvas.jpeg)')
-            artifact.appendChild(canvas)
-
-            let htmlEmbed = document.createElement('a-entity')
-            htmlEmbed.className = "frame"
-            htmlEmbed.setAttribute("htmlembed", "PPU:256")
-            htmlEmbed.setAttribute("position", {x: 0, y: 0, z: 0.055})
-            let div = document.createElement('div')
-            let pre = document.createElement("pre")
-            let code = document.createElement("code")
-
-            switch(artifactObject.type)
-            {
-                case 'image':
-                    htmlEmbed.classList.add("img-frame")
-                    htmlEmbed.setAttribute("id", artifactObject.alt)
-                    div.className = "vr-img"
-                    htmlEmbed.className = "img-frame"
-                    let image = document.createElement('img')
-                    image.setAttribute('src', artifactObject.src)
-                    div.appendChild(image)
-                    break
-                case 'block quote':
-                    div.className = "vr-col-" + (7 - Math.floor(artWidth))
-                    htmlEmbed.setAttribute("id", "block_quote")
-                    div.innerHTML += artifactObject.text
-                    break
-                case 'code':
-                    div.className = "vr-col-" + (7 - Math.floor(artWidth))
-                    code.innerHTML += artifactObject.code
-                    pre.appendChild(code)
-                    div.appendChild(pre)
-                    break
-                case 'code block':
-                    div.className = "vr-col-" + (7 - Math.floor(artWidth))
-                    code.className = "language-" + artifactObject.lang
-                    code.innerHTML += artifactObject.code
-                    pre.appendChild(code)
-                    div.appendChild(pre)
-                    break
-            }
-
-            if(AFRAME.utils.device.isMobile())
-            {
-                let checkpoint = this.InitCheckPoint({x: 0, y: -(artHeight/2 + 0.5), z: 2})
-                artifact.appendChild(checkpoint)
-            }
-
-            htmlEmbed.addEventListener('rendered', () =>{
-                let box = new THREE.Box3().setFromObject(htmlEmbed.object3D);
-                canvas.setAttribute("height", box.getSize().y)
-                canvas.setAttribute("width", box.getSize().z != 0 ? box.getSize().z : box.getSize().x)
-            })
-
-            htmlEmbed.appendChild(div)
-            artifact.appendChild(htmlEmbed)
-
-            room.appendChild(artifact)
         }
-
-        this._museum.appendChild(room)
     }
 
     SpiralMuseum(radius)
@@ -374,46 +329,247 @@ class Malloci
             this._museum.appendChild(wall)
         }
         this._scene.appendChild(this._museum)
-
     }
 
-    SquareMuseum()
+    build()
     {
         this._museum = document.createElement('a-entity')
         this._museum.setAttribute('id', 'museum')
-
-        // Build north wall
-        this._museum.appendChild(this.Wall('north', this._width, 0, 0, 0))
-
-        // build south wall
-        this._museum.appendChild(this.Wall('south', this._width, this._width, this._depth, 180))
-
-        // build west wall
-        this._museum.appendChild(this.Wall('west', this._depth, this._width, 0, 270))
-
-        // build east wall
-        this._museum.appendChild(this.Wall('east', this._depth, 0, this._depth, 90))
-
-        this._museum.appendChild(this.ceiling('vaulted'))
-
-        this.Partition()
-
         this._scene.appendChild(this._museum)
+        let rooms = this._tree.rooms
+        this._museum.appendChild(this.Wall('north', this._roomWidth, 0, 0, 0))
+
+        let xr = 0
+        let xl = this._roomWidth
+        let zr = 0
+        let zl = 0
+        let rot = 270
+        let left = 0
+        let right = 0
+
+        for(let roomNum = 1; roomNum <= rooms.length; roomNum++)
+        {
+            let room = rooms[roomNum-1]
+
+            let roomDepth = 0
+
+            if(room.subrooms != null && room.subrooms.length != [])
+            {
+                for( let srn = 1; srn <= room.subrooms.length ; srn++)
+                {
+                    let subroom = room.subrooms[srn - 1]
+                    roomDepth += (subroom.artifacts.length % 2 ? subroom.artifacts.length - 1: subroom.artifacts.length) * 3
+                }
+            }
+            else
+            {
+                roomDepth =  room.artifacts.length * 3
+            }
+
+            if(roomDepth < this._roomWidth)
+            {
+                roomDepth += this._roomWidth
+            }
+
+            let leftId = 'left_' + roomNum
+            let rightId = 'right_' + roomNum
+            let leftWall = null
+            let rightWall = null
+
+            let lengthr = 0
+            let lengthl = 0
+            let floorLength = 0
+
+            if (roomNum == 1)
+            {
+                this.CreateJumpTo(room.name, this._roomWidth/2, 1, 180)                
+
+                if(this.rng() < 0.5) // turn left
+                {
+                    left++
+                    lengthr = roomDepth + (this._roomWidth/2)
+                    lengthl = roomDepth - (this._roomWidth/2)
+                    floorLength = lengthl
+                }
+                else // turn right
+                {
+                    right++
+                    lengthr = roomDepth - (this._roomWidth/2)
+                    lengthl = roomDepth + (this._roomWidth/2)
+                    floorLength = lengthr
+                }
+
+                rightWall = this.Wall(rightId, lengthr, xr, zr, rot, true)
+                leftWall = this.Wall(leftId, lengthl, xl, zl, rot)
+
+                rightWall.appendChild(this.floor("floor" + roomNum, this._roomWidth, floorLength, 0, 0, 0))
+
+                this._museum.appendChild(rightWall)
+                this._museum.appendChild(leftWall)
+
+                zr += lengthr
+                zl += lengthl
+
+                if(left > 0)
+                {
+                    rot += 90
+                }
+                else 
+                {
+                    rot -= 90
+                }
+
+            }
+            else if(roomNum != rooms.length)
+            {
+                if((this.rng() < 0.5 && left < 2) || right == 2) // turn left
+                {
+                    lengthr = !left ? roomDepth : roomDepth + this._roomWidth*2
+                    lengthl = roomDepth
+                    floorLength = !left ? lengthl : roomDepth + this._roomWidth
+                    left++
+                    right = 0
+                }
+                else // turn right
+                {
+                    lengthr = roomDepth
+                    lengthl = left > 0 ? roomDepth : roomDepth + this._roomWidth*2
+                    floorLength = left > 0 ? lengthr : roomDepth + this._roomWidth
+                    right++
+                    left = 0
+                }
+
+                rightWall = this.Wall(rightId, lengthr, xr, zr, rot, true)
+                leftWall = this.Wall(leftId, lengthl, xl, zl, rot)
+
+                if((right == 0 && left < 2) || right >= 2)
+                {
+                    leftWall.appendChild(this.floor("floor" + roomNum, this._roomWidth, floorLength, 0, this._roomWidth, 0))
+                }
+                else
+                {
+                    rightWall.appendChild(this.floor("floor" + roomNum, this._roomWidth, floorLength, 0, 0, 0))
+                }
+
+                this._museum.appendChild(rightWall)
+                this._museum.appendChild(leftWall)
+
+                let jx = (xr + xl)/2
+                let jz = (zr + zl)/2
+
+                switch(rot)
+                {
+                    case 90:
+                    case 450:
+                        zr -= lengthr
+                        zl -= lengthl
+                        break
+                    case 180:
+                        xr -= lengthr
+                        xl -= lengthl
+                        break
+                    case 270:
+                        zr += lengthr
+                        zl += lengthl
+                        break
+                    case 360:
+                    case 0:
+                        xr += lengthr
+                        xl += lengthl
+                        break
+                }
+                
+                if(left > 0)
+                {
+                    rot += 90
+                }
+                else 
+                {
+                    rot -= 90
+                }
+
+                this.CreateJumpTo(room.name, jx, jz, rot)
+            }
+            else
+            {
+                if(left > 0)
+                {
+                    lengthr = roomDepth + this._roomWidth
+                    lengthl = roomDepth
+                }
+                else // turn right
+                {
+                    lengthr = roomDepth
+                    lengthl = roomDepth + this._roomWidth
+                }
+
+                floorLength = roomDepth + this._roomWidth
+                rightWall = this.Wall(rightId, lengthr, xr, zr, rot, true)
+                leftWall = this.Wall(leftId, lengthl, xl, zl, rot)
+
+                this._museum.appendChild(rightWall)
+                this._museum.appendChild(leftWall)
+
+                let lastx = xl
+                let lastz = zl
+
+                let jx = (xr + xl)/2
+                let jz = (zr + zl)/2
+
+                switch(rot)
+                {
+                    case 90:
+                    case 450:
+                        lastz = zl - lengthl
+                        break
+                    case 180:
+                        lastx = xl - lengthl
+                        break
+                    case 270:
+                        lastz = zl + lengthl
+                        break
+                    case 360:
+                    case 0:
+                        lastx = xl + lengthl
+                        break
+                }
+
+                let backWall = this.Wall(leftId, this._roomWidth, lastx, lastz, rot - 90)
+                backWall.appendChild(this.floor("floor" + roomNum, this._roomWidth, floorLength, 0, 0, -90))
+
+
+                if(left > 0)
+                {
+                    rot += 90
+                }
+                else 
+                {
+                    rot -= 90
+                }
+
+                this.CreateJumpTo(room.name, jx, jz, rot)
+                this._museum.appendChild(backWall)
+            }
+            this.HangArt(leftWall, rightWall, room.artifacts)
+        }
     }
 
-    Wall(id, length, x, z, rotation)
+    Wall(id, length, x, z, rotation, right = false)
     {
-        let plaster = document.createElement('a-box')
+        let plaster = document.createElement('a-plane')
         let wall = document.createElement('a-entity')
 
-        plaster.setAttribute('depth', 0.1)
-        plaster.setAttribute('height', 4)
+        let xPos = length
+
+        if(right) plaster.setAttribute("rotation", {x: 0, y: 180, z: 0})
+
+        plaster.setAttribute('height', 6.4)
         plaster.setAttribute('width', length)
-        plaster.setAttribute('position', {x: length/2, y: 2, z: 0})
+        plaster.setAttribute('position', {x: xPos/2, y: 3.2, z: 0})
         plaster.setAttribute('color', '#f4f2d7')
         plaster.setAttribute('material', 'shader: flat; src: url(textures/wall2.jpg)')
         plaster.setAttribute("shadow", '')
-        wall.appendChild(plaster)
+        plaster.setAttribute("class", 'scenery')
 
         let beam = document.createElement('a-box')
         beam.setAttribute('height', 0.5)
@@ -421,50 +577,7 @@ class Malloci
         beam.setAttribute('width', length + 0.2)
         beam.setAttribute('color', '#d7bd98')
         beam.setAttribute('material', 'shader: flat; src: url(textures/concrete_floor.jpg)')
-        beam.setAttribute('position', {x: length/2, y: 3.75, z: 0})
-        wall.appendChild(beam)
-
-        wall.setAttribute('id', id)
-        wall.setAttribute('position', {x: x, y: 0, z: z})
-        wall.setAttribute('rotation', {x: 0, y: rotation, z: 0})
-
-        return wall
-    }
-
-    WallWithDoorWay(id, wallNum, doorWidth, length, x, z, rotation)
-    {
-        let plaster = document.createElement('a-box')
-        let wall = document.createElement('a-entity')
-
-        let doorWay = length - doorWidth
-
-        let doorPos = length
-
-        if (wallNum % 2)
-        {
-            doorPos -= doorWidth
-        }
-        else
-        {
-            doorPos += doorWidth
-        }
-
-        plaster.setAttribute('depth', 0.1)
-        plaster.setAttribute('height', 4)
-        plaster.setAttribute('width', doorWay)
-        plaster.setAttribute('position', {x: doorPos/2, y: 2, z: 0})
-        plaster.setAttribute('color', '#f4f2d7')
-        plaster.setAttribute('material', 'shader: flat; src: url(textures/wall2.jpg)')
-        plaster.setAttribute("shadow", '')
-
-        let beam = document.createElement('a-box')
-        beam.setAttribute('height', 0.5)
-        beam.setAttribute('depth', 0.3)
-        beam.setAttribute('width', this._depth)
-        beam.setAttribute('color', '#d7bd98')
-        beam.setAttribute('material', 'shader: flat; src: url(textures/concrete_floor.jpg)')
-        beam.setAttribute('position', {x: this._depth /2, y: 3.75, z: 0})
-
+        beam.setAttribute('position', {x: length/2, y: 6.15, z: 0})
 
         wall.appendChild(plaster)
         wall.appendChild(beam)
@@ -476,7 +589,7 @@ class Malloci
         return wall
     }
 
-    BuildSeperator(id, wallNum, doorWidth, length, x, z, rotation)
+    Seperator(id, wallNum, doorWidth, length, x, z, rotation)
     {
         let plaster = document.createElement('a-box')
         let wall = document.createElement('a-entity')
@@ -501,6 +614,7 @@ class Malloci
         plaster.setAttribute('color', '#f4f2d7')
         plaster.setAttribute('material', 'shader: flat; src: url(textures/wood_sep1.jpg)')
         plaster.setAttribute("shadow", '')
+        plaster.setAttribute("class", 'scenery')
 
         wall.appendChild(plaster)
 
@@ -511,20 +625,25 @@ class Malloci
         return wall
     }
 
-    floor(width, depth, roomNum)
+    floor(id, width, depth, x, z, rotation)
     {
-        let floor = document.createElement('a-plane')
-        roomNum--
+        let floor = document.createElement('a-entity')
+        let tile = document.createElement('a-box')
+        floor.setAttribute("id", id)
 
-        floor.setAttribute('position', {x: width/2 + width * roomNum, y: 0, z: depth/2})
-        floor.setAttribute('rotation', {x: -90, y: 0, z: 0})
-        floor.setAttribute('color', '#d7bd98')
-        floor.setAttribute('material', 'shader: flat; src: url(textures/concrete_floor.jpg)')
-        floor.setAttribute('width', width)
-        floor.setAttribute('height', depth)
-        floor.setAttribute('class', 'collidable')
-        floor.setAttribute("shadow", '')
+        tile.setAttribute('position', {x: depth/2, y: 0, z: -width/2})
+        tile.setAttribute('color', '#d7bd98')
+        tile.setAttribute('material', 'shader: flat; src: url(textures/concrete_floor.jpg)')
+        tile.setAttribute('height', 0.01)
+        tile.setAttribute('width', depth)
+        tile.setAttribute('depth', width)
+        tile.setAttribute("shadow", '')
+        tile.setAttribute('class', 'scenery')
 
+        floor.setAttribute('position', {x: x, y: 0, z: z})
+        floor.setAttribute('rotation', {x: 0, y: rotation, z: 0})
+
+        floor.appendChild(tile)
         return floor
     }
 
@@ -551,67 +670,40 @@ class Malloci
                     ceiling.appendChild(beam)
                 }
                 return ceiling
-
-        }
-        
-    }
-
-    initWalkWay(width, depth, roomNum, checkPointsPerRoom)
-    {
-        roomNum--
-        for(let i = 1; i <= checkPointsPerRoom; i++)
-        {
-            this._museum.appendChild(this.InitCheckPoint({x: width/2 + width * roomNum, y: 0, z: ((depth)/(checkPointsPerRoom * 2)) * i}))
-        }
+        }  
     }
 
     InitCheckPoint(position)
     {
-        let checkpoint = document.createElement('a-cylinder')
+        let checkpoint = document.createElement("a-sphere")
         checkpoint.setAttribute("checkpoint", '')
-        checkpoint.setAttribute("height", 0.01)
-        checkpoint.setAttribute("radius", 0.4)
-        checkpoint.setAttribute('position', position)
+        checkpoint.setAttribute("position", position)
+        checkpoint.setAttribute("opacity", 0.0)
+
+        let ring = document.createElement("a-entity")
+        ring.setAttribute("geometry", "primitive: ring; radiusInner: 0.6; radiusOuter: .8;")
+        ring.setAttribute("material", "color: #CCC; shader: flat;")
+        ring.setAttribute("rotation", {x: -90, y:0, z:0})
+        checkpoint.appendChild(ring)
+
         return checkpoint
     }
 
-    Partition()
+    CreateJumpTo(roomName, x, z, rotation)
     {
-        let rooms = this._tree.rooms
-        let cor_width = this._width / rooms.length        
-
-        for(let roomNum = 1; roomNum <= rooms.length; roomNum++)
-        {
-            let room = rooms[roomNum-1]
-            let subrooms = room.subRooms
-            let cor_depth = this._depth / subrooms.length
-
-            if (roomNum < rooms.length)
-            {
-                let wallID = room.name.replace(" ", '_') + "_west_wall"
-                let roomWall = this.WallWithDoorWay(wallID, roomNum, 4, this._depth, cor_width * roomNum, 0, 270)
-                this._museum.appendChild(roomWall)
-            }
-
-            this.InstantiateArtifacts(roomNum, rooms.length, room.artifacts, cor_width, this._depth)
-            
-            let roomFloor = this.floor(cor_width, this._depth, roomNum)
-            this._museum.appendChild(roomFloor)
-
-            if(AFRAME.utils.device.isMobile())
-            {
-                this.initWalkWay(cor_width, this._depth, roomNum, 2)
-            }
-            for(let subRoomNum = 1; subRoomNum < subrooms.length; subRoomNum++)
-            {
-                let subroom = subrooms[subRoomNum-1]
-
-                let subWallID = subroom.name.replace(" ", '_') + "_south_wall"
-                let subRoomWall = this.BuildSeperator(subWallID, subRoomNum, 3, cor_width, cor_width * roomNum, cor_depth * subRoomNum, 180)
-                this._museum.appendChild(subRoomWall)
-            }
-
-        }
+        console.log(roomName, roomName.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"").replace(/ /g, '-'));
         
+        let title = document.getElementById(roomName.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g,"").replace(/ /g, '-'))
+
+        let jumpButton = document.createElement('img')
+        jumpButton.setAttribute("src", "img/logo.svg")
+        jumpButton.setAttribute("class", "jump")
+
+        jumpButton.addEventListener('click', () => {
+            this._rig.setAttribute('position', {x: x, y: 0, z: z})
+            this._rig.setAttribute('rotation', {x: 0, y: rotation, z: 0})
+            this._scene.enterVR()
+        })
+        title.appendChild(jumpButton)
     }
 }

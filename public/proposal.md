@@ -1,5 +1,15 @@
 # Malloci
 Creating WebVR content optimized for consumption and recall using Natural Language Processing.
+
+![0](img/dog1.jpg)
+
+### test subsection
+
+![0](img/dog1.jpg)
+
+
+### test again
+
 ## Description
 Malloci is a tool that uses Natural Language Processing and information visualization techniques to generate WebVR content from traditional web content. This content is curated to facilitate ease of consumption for the user, across a variety of VR platforms and browsers. With the intent to eventually enable users to generate WebVR content of their own, it can also render a MarkDown based framework to greatly reduce any prerequisite knowledge to content creation. An additional feature is exploring how a WebVR environment generated from web content can be employed to teach users how they can remember it: a vehicle for the concept of building memory palaces.
 
@@ -28,11 +38,3 @@ There are obvious parallels that can be drawn to the early days of the personal 
 We will start by creating a tool that generates museum exhibits from web pages (e.g. Wikipedia articles) by associating text with representative images and symbols. We will start by researching museum layout and exhibit design, and creating a default design language for these generated spaces. Key research findings we hope to incorporate are: (1) what constitutes a memorable exhibit design, and (2) how to manipulate layout to tell a story. (3) effective methods of text representation that can be easily understood, enhancing the immersive experience of users. Based on our findings, we will generate the exhibit layout to match article formatting. Sections become rooms, and paragraphs become key locations in that room. We will also design a series of unobtrusive VR locomotions that allow users to seamlessly navigate through an exhibition (for example, choose a section of an article and jump directly to the VR exhibition of that section).
 
 We will then implement information retrieval and natural language processing to generate exhibit content - strategically placing relevant objects and images inside the VR environment for user consumption. At a high level, we will implement an encoder that takes text as input and outputs a sequence of assets that tell the story of said text. This task can be further split into two sub-parts: (1) extraction and summarization of key concepts from Wikipedia article (2) generation relevant 2D and 3D content to render inside the exhibit. The second step will require a combination of retrieval of relevant web content (e.g. images of Abe Lincoln to tell a story about Lincoln), as well as generation of new assets, which will be the most challenging part.	
-
-### Phase Two (Feb 2020 - Mar 2020)
-
-Once we have a working VR prototype of Malloci, we will recruit people to go through user testing and evaluate the user experience by a variety of metrics such as engagement levels and information recall. Based on participant feedback, we will iterate and refine our tool to generate easily digestible and memorable WebVR content. We will also begin to define a custom MarkDown syntax to allow users to write and create their own exhibits. Users will be able to generate their own unique VR mind palace by simply uploading any text they want to memorize and rendering it through our tool.  
-
-### Phase Three (Apr 2020 - May 2020)
-
-If the first and second phases of the project are completed on schedule, we will proceed to introduce features focused on memory training. The method of loci is a powerful memorization technique used by memory champions to memorize long lists of numbers and words. We believe that we can harness our tool as a training environment for this memorization technique. Expanding on our exhibit-generation capabilities from parts 1 and 2, we will adapt our technology to generate new environments optimized for list recall with mnemonic objects rendered to represent each item on the list. We envision walking the user through a set of training levels, helping them adapt and internalize this technique for continued personal use.
