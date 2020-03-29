@@ -6,21 +6,11 @@
 Malloci is a set of tool to help non-developers create Web-based VR content. Currently, creating a VR experience for the web requires a strong working knowledge of web development, game development, or both. This makes for a pretty steap learning curve, and results in a very limited amount of content.
 ​
 
-**consider adding complex ThreeJS code snippet here**
-
-```MarkDown
-![cat_whut-the-fluff](https://i.pinimg.com/originals/cf/11/6a/cf116aa3766300472c99250e22817513.png)
-```
-​
 Malloci attempts to lower this barrier by allowing users to create informational WebVR content using MarkDown instead.
-​
-```MarkDown
-![futurama_still-don't-get-it](https://pics.me.me/thumb_wait-nope-i-still-dont-get-memegenerator-net-wait-nope-i-49390423.png)
-```
-​
+
 ## What is MarkDown?
 ​
-We gotcha. MarkDown is a simple document formatting language, traditionally used for creating web pages. 
+MarkDown is a simple document formatting language, traditionally used for creating web pages. 
 ​
 Here's some of the basic syntax:
 ​
@@ -36,22 +26,6 @@ Text styling:
 **Two stars at the beginning and end make bold text**
 ​
 *One star italicizes*
-```
-​
-```MarkDown
-Lists:
-​
-- dashes
-- make
-- bullet
-- points
-​
-Ordered Lists:
-​
-1. Numbers
-2. make
-3. ordered
-4. lists
 ```
 ​
 ```MarkDown

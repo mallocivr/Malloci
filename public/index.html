@@ -13,6 +13,10 @@
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/default.min.css">
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
 
+    <!-- our shit -->
+    <script src="assets.js"></script>
+    <script src="components.js"></script>
+
     <link rel="stylesheet" type="text/css" href="simple-grid.min.css">
     <link rel="stylesheet" type="text/css" href="style.css">
   </head>
@@ -26,7 +30,7 @@
           <a-mixin id="checkpoint"></a-mixin>
           <a-mixin id="checkpoint-hovered" color="#6CEEB5"></a-mixin>
         </a-assets>
-        <a-light position="0 6 0" rotation="0 0 45"></a-light>
+        <a-light type="ambient" position="0 6 0" rotation="0 0 45"></a-light>
         <a-entity id="rig"
                   movement-controls
                   position="2 0 1" 
@@ -42,7 +46,6 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="seedrandom.min.js"></script>
-    <script src="assets.js"></script>
     <script src="malloci.js"></script>
     <script src="index.js"></script>
   </body>

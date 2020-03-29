@@ -268,11 +268,10 @@ class Malloci
 
     HangArt(leftWallEntity, rightWallEntity, artifacts)
     {
-        let divisor = artifacts.length + 2 > 4 ? artifacts.length + 2 : 4
-        // divisor = divisor % 2 ? divisor - 1 : divisor
+        let divisor = artifacts.length/2  > 3 ? artifacts.length/2 : 3
 
-        let leftLength = leftWallEntity.querySelector('.scenery').getAttribute("width")
-        let rightLength = rightWallEntity.querySelector('.scenery').getAttribute("width")
+        let leftLength = leftWallEntity.getAttribute("width")
+        let rightLength = rightWallEntity.getAttribute("width")
 
         let artWidthLeft = leftLength/divisor
         let artWidthRight = rightLength/divisor
@@ -280,17 +279,17 @@ class Malloci
         for (let i = 1; i <= artifacts.length; i++)
         {
             let artObj = artifacts[i-1]
-            if (i % 2)
+            if (i <= artifacts.length / 2)
             {
                 let artifact = this.InstantiateArt(artObj, artWidthLeft)
                 leftWallEntity.appendChild(artifact)
-                artifact.setAttribute("position",{x:  artWidthLeft + artWidthLeft * i, y: 2, z: 0.2})
+                artifact.setAttribute("position",{x:  artWidthLeft * i, y: 2, z: 0.2})
             }
             else
             {
                 let artifact = this.InstantiateArt(artObj, artWidthRight)
                 rightWallEntity.appendChild(artifact)
-                artifact.setAttribute("position",{x:  artWidthRight + artWidthRight * (i - 1), y: 2, z: -0.2})
+                artifact.setAttribute("position",{x:  artWidthRight * (i - artifacts.length/2), y: 2, z: -0.2})
                 artifact.setAttribute("rotation", {x: 0, y: 180, z: 0})
             }
         }
@@ -399,7 +398,7 @@ class Malloci
                     floorLength = lengthr
                 }
 
-                rightWall = this.Wall(rightId, lengthr, xr, zr, rot, true)
+                rightWall = this.Wall(rightId, lengthr, xr, zr, rot, "right")
                 leftWall = this.Wall(leftId, lengthl, xl, zl, rot)
 
                 rightWall.appendChild(this.floor("floor" + roomNum, this._roomWidth, floorLength, 0, 0, 0))
@@ -439,7 +438,7 @@ class Malloci
                     left = 0
                 }
 
-                rightWall = this.Wall(rightId, lengthr, xr, zr, rot, true)
+                rightWall = this.Wall(rightId, lengthr, xr, zr, rot, "right")
                 leftWall = this.Wall(leftId, lengthl, xl, zl, rot)
 
                 if((right == 0 && left < 2) || right >= 2)
@@ -504,7 +503,7 @@ class Malloci
                 }
 
                 floorLength = roomDepth + this._roomWidth
-                rightWall = this.Wall(rightId, lengthr, xr, zr, rot, true)
+                rightWall = this.Wall(rightId, lengthr, xr, zr, rot, "right")
                 leftWall = this.Wall(leftId, lengthl, xl, zl, rot)
 
                 this._museum.appendChild(rightWall)
@@ -554,38 +553,14 @@ class Malloci
         }
     }
 
-    Wall(id, length, x, z, rotation, right = false)
+    Wall(id, length, x, z, rotation, leftOrRight = "left")
     {
-        let plaster = document.createElement('a-plane')
         let wall = document.createElement('a-entity')
-
-        let xPos = length
-
-        if(right) plaster.setAttribute("rotation", {x: 0, y: 180, z: 0})
-
-        plaster.setAttribute('height', 6.4)
-        plaster.setAttribute('width', length)
-        plaster.setAttribute('position', {x: xPos/2, y: 3.2, z: 0})
-        plaster.setAttribute('color', '#f4f2d7')
-        plaster.setAttribute('material', 'shader: flat; src: url(textures/wall2.jpg)')
-        plaster.setAttribute("shadow", '')
-        plaster.setAttribute("class", 'scenery')
-
-        let beam = document.createElement('a-box')
-        beam.setAttribute('height', 0.5)
-        beam.setAttribute('depth', 0.3)
-        beam.setAttribute('width', length + 0.2)
-        beam.setAttribute('color', '#d7bd98')
-        beam.setAttribute('material', 'shader: flat; src: url(textures/concrete_floor.jpg)')
-        beam.setAttribute('position', {x: length/2, y: 6.15, z: 0})
-
-        wall.appendChild(plaster)
-        wall.appendChild(beam)
-
+        wall.setAttribute('wall', `length: ${length}; orientation: ${leftOrRight}`)
         wall.setAttribute('id', id)
+        wall.setAttribute('width', length)
         wall.setAttribute('position', {x: x, y: 0, z: z})
         wall.setAttribute('rotation', {x: 0, y: rotation, z: 0})
-
         return wall
     }
 
@@ -628,22 +603,12 @@ class Malloci
     floor(id, width, depth, x, z, rotation)
     {
         let floor = document.createElement('a-entity')
-        let tile = document.createElement('a-box')
         floor.setAttribute("id", id)
-
-        tile.setAttribute('position', {x: depth/2, y: 0, z: -width/2})
-        tile.setAttribute('color', '#d7bd98')
-        tile.setAttribute('material', 'shader: flat; src: url(textures/concrete_floor.jpg)')
-        tile.setAttribute('height', 0.01)
-        tile.setAttribute('width', depth)
-        tile.setAttribute('depth', width)
-        tile.setAttribute("shadow", '')
-        tile.setAttribute('class', 'scenery')
+        floor.setAttribute('class', 'scenery')
+        floor.setAttribute('floor', `width: ${width}; depth: ${depth}`)
 
         floor.setAttribute('position', {x: x, y: 0, z: z})
         floor.setAttribute('rotation', {x: 0, y: rotation, z: 0})
-
-        floor.appendChild(tile)
         return floor
     }
 
