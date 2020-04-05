@@ -5,7 +5,7 @@ xmlhttp = new XMLHttpRequest()
 xmlhttp.onreadystatechange = function(){
     md = xmlhttp.responseText;
 };
-xmlhttp.open("GET","../md/index.md",false);
+xmlhttp.open("GET","./md/index.md",false);
 xmlhttp.send();
 
 document.getElementById('article').innerHTML = marked(md)
