@@ -10,7 +10,9 @@ There are obvious parallels that can be drawn to the early days of the personal 
 
 ## State of the Art
 
-Currently, consuming web content in VR is done either by generating WebVR content using an available framework, or a traditional web browser is rendered within the user’s field of vision. WebVR frameworks suffer from many of the same problems as traditional VR content creation, resulting in a relatively small amount of WebVR content, and rendering in a browser does not adequately leverage the immersive nature of medium.  
+> Currently, consuming web content in VR is done either by generating WebVR content using an available framework, or a traditional web browser is rendered within the user’s
+> field of vision. WebVR frameworks suffer from many of the same problems as traditional VR content creation, resulting in a relatively small amount of WebVR content, and
+> rendering in a browser does not adequately leverage the immersive nature of medium.  
 
 ## Team
 - Michael Gutensohn - Project Manager and VR Software Engineer

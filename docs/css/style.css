@@ -1,0 +1,101 @@
+.jump {
+    padding: 0 1rem;
+    height: 2rem;
+    cursor: pointer;
+}
+
+#article > p > img {
+    width: 100%
+}
+
+.title > h1 {
+    float: left;
+}
+
+/* VR HTML Embed grid system */
+.frame {
+    width: 1024px;
+    font-size: 20pt;
+}
+
+.word-art {
+    font-size: 30pt;
+}
+
+.img-frame {
+    text-align: center;
+}
+
+.vr-col-1 {
+    width: 15%;
+    margin: 5% 42.5%;
+}
+
+.vr-col-2 {
+    width: 30%;
+    margin: 5% 35%;
+}
+
+.vr-col-3 {
+    width: 45%;
+    margin: 5% 27.5%;
+}
+
+.vr-col-4 {
+    width: 60%;
+    margin: 5% 20%;
+}
+
+.vr-col-5 {
+    width: 75%;
+    margin: 5% 12.5%;
+}
+
+.vr-col-6 {
+    width: 90%;
+    margin: 5% 5%;
+}
+
+/* Code snippets */
+.code {
+    margin: auto;
+}
+
+.block-quote
+{
+    background-color: #fff;
+}
+
+.vr-img{
+    margin:  0 auto;
+    display: inline-block;
+}
+
+.vr-img > img {
+    max-height: 680px;
+    object-fit: contain;
+}
+
+/* for testing page */
+
+.test-containter {
+    margin-left: auto;
+    margin-right: auto;
+    width: 90%
+}
+
+#mdfield, #render-window {
+    width: 100%;
+    height: 90vh;
+}
+
+#mdfield {
+    font-size: 12pt;
+}
+
+#RenderVRMD {
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 12pt;
+    float: right;
+}
