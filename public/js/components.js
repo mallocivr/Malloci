@@ -4,7 +4,7 @@ AFRAME.registerComponent('beam', {
     width: {type: 'number'},
     thickness: {type: 'number'},
     height: {type: 'number'},
-    src: {type: 'map', default: '#floorTexture'},    
+    src: {type: 'map', default: '#ceilingTexture'},    
   },
 
   init: function () {
@@ -150,7 +150,7 @@ AFRAME.registerComponent('ceiling', {
     height: {type: 'number', default: 5},
     rotateY: {type: 'number'},
     roomLength: {type: 'number'},
-    src: {type: 'map', default: '#floorTexture'},
+    src: {type: 'map', default: '#ceilingTexture'},
   },
 
   init: function () {
@@ -381,7 +381,7 @@ AFRAME.registerComponent('malloci', {
       this._roomWidth = data.hallWidth
       this._rig = document.getElementById("rig")
       this._camera = document.getElementById("camera")
-
+      
       this._tree = data.tree
       
       if (localStorage.getItem(this._tree.name + '_museumTree') == undefined)
@@ -448,6 +448,13 @@ AFRAME.registerComponent('malloci', {
 
     build: function()
     {
+        if(this._tree.theme.floor != null)
+          document.getElementById("floorTexture").setAttribute("src", this._tree.theme.floor)
+        if(this._tree.theme.walls != null)
+          document.getElementById("wallTexture").setAttribute("src", this._tree.theme.walls)
+        if(this._tree.theme.ceiling != null)
+          document.getElementById("ceilingTexture").setAttribute("src", this._tree.theme.ceiling)
+
         this.rng = new Math.seedrandom(this._tree.name)
         let rooms = this._tree.rooms
         this.el.appendChild(this.Wall('north', [], this._roomWidth, 0, 0, 0))
@@ -506,15 +513,15 @@ AFRAME.registerComponent('malloci', {
                 if(this.rng() < 0.5) // turn left
                 {
                     left++
-                    lengthr = roomDepth + (this._roomWidth/2)
-                    lengthl = roomDepth - (this._roomWidth/2)
+                    lengthr = roomDepth + (this._roomWidth)
+                    lengthl = roomDepth 
                     floorLength = lengthl
                 }
                 else // turn right
                 {
                     right++
-                    lengthr = roomDepth - (this._roomWidth/2)
-                    lengthl = roomDepth + (this._roomWidth/2)
+                    lengthr = roomDepth 
+                    lengthl = roomDepth + (this._roomWidth)
                     floorLength = lengthr
                 }
 

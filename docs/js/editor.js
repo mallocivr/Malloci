@@ -29,6 +29,8 @@ malloci.setAttribute('malloci', {tree: JSON.stringify(tree)})
 renderButton.addEventListener('click', function () {   
 
     tree = vrmdParser.parse(mdfield.value)
+    console.log(tree);
+    
 
     // malloci.setAttribute('malloci', {md: md, API: "http://127.0.0.1:5000/generate"})
     malloci.setAttribute('malloci', {tree: JSON.stringify(tree)})

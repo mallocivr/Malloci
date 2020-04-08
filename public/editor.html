@@ -8,12 +8,11 @@
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.0/dist/aframe-extras.min.js"></script> 
     <script src="https://supereggbert.github.io/aframe-htmlembed-component/dist/build.js"></script>
 
-    <script src="https://rawgit.com/fernandojsg/aframe-teleport-controls/master/dist/aframe-teleport-controls.min.js"></script>
-
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/default.min.css">
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
 
     <!-- our shit -->
+    <script src="js/aframe-teleport-controls.js"></script>
     <script src="js/components.js"></script>
     <script src="js/seedrandom.min.js"></script>
     <link rel="stylesheet" type="text/css" href="css/simple-grid.min.css">
@@ -26,11 +25,14 @@
           <textarea id="mdfield">
 # Test Doc
 
+$[ceiling](https://live.staticflickr.com/750/20998785236_450cd2b04e_b.jpg)
+
 This is the first room
 
 ## Second room
 
-> Block quote
+> This block quote has an audio clip attached to it.
+^(audio/example.m4a)
 
 ## Third Room
 
@@ -52,6 +54,8 @@ Code block
               <a-mixin id="checkpoint-hovered" color="#6CEEB5"></a-mixin>
               <img id="wallTexture" src="textures/wall2.jpg">
               <img id="floorTexture" src="textures/concrete_floor.jpg">
+              <img id="ceilingTexture" src="textures/concrete_floor.jpg">
+
             </a-assets>
             <a-light type="ambient" position="0 6 0" rotation="0 0 45"></a-light>
             <a-entity id="rig"
@@ -60,6 +64,7 @@ Code block
                       rotation="0 180 0">
               <a-camera id="camera"
               look-controls="pointerLockEnabled: true">
+              <a-cursor></a-cursor>
               </a-camera>
               <a-entity oculus-touch-controls="hand: left" teleport-controls="collisionEntities: .scenery; landingMaxAngle: 45; button: trigger; cameraRig: #rig; teleportOrigin: #camera;"></a-entity>
               <a-entity oculus-touch-controls="hand: right" teleport-controls="collisionEntities: .scenery; landingMaxAngle: 45; button: trigger; cameraRig: #rig; teleportOrigin: #camera;"></a-entity>

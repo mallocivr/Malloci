@@ -35,7 +35,7 @@ class VRMD
             // Headings
             if (words[0].charAt(0) == "#" && !in_code)
             {
-                if(words[0] == "###") 
+                if(words[0].includes("###")) 
                     continue
 
                 level = words.shift()
