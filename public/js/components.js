@@ -247,47 +247,58 @@ AFRAME.registerComponent('wall-art', {
     let artClassNum =  6
 
     switch(data.artifact.type)
-        {
-            case 'image':
-                el.classList.add("img-frame")
-                el.setAttribute("id", data.artifact.alt)
-                div.className = "vr-img"
-                el.className = "img-frame"
-                let image = document.createElement('img')
-                image.setAttribute('src', data.artifact.src)
-                div.appendChild(image)
-                break
-            case 'block quote':
-                div.className = "vr-col-" + artClassNum
-                el.classList.add('block-quote')                   
-                div.innerHTML += data.artifact.text
-                break
-            case 'word art':
-                el.classList.add('word-art')                   
-                div.className = "vr-col-" + artClassNum
-                div.innerHTML += data.artifact.html
-                break
-            case 'code':
-                div.className = "code"
-                code.innerHTML += data.artifact.code
-                pre.appendChild(code)
-                div.appendChild(pre)
-                hljs.highlightBlock(div);
-                break
-            case 'code block':
-                div.className = "code"
-                code.className = "language-" + data.artifact.lang
-                code.innerHTML += data.artifact.code
-                pre.appendChild(code)
-                div.appendChild(pre)
-                hljs.highlightBlock(div);
-
-                break
-        }
+    {
+        case 'image':
+            el.classList.add("img-frame")
+            el.setAttribute("id", data.artifact.alt)
+            div.className = "vr-img"
+            el.className = "img-frame"
+            let image = document.createElement('img')
+            image.setAttribute('src', data.artifact.src)
+            div.appendChild(image)
+            break
+        case 'block quote':
+            div.className = "vr-col-" + artClassNum
+            el.classList.add('block-quote')                   
+            div.innerHTML += data.artifact.text
+            break
+        case 'word art':
+            el.classList.add('word-art')                   
+            div.className = "vr-col-" + artClassNum
+            div.innerHTML += data.artifact.html
+            break
+        case 'code':
+            div.className = "code"
+            code.innerHTML += data.artifact.code
+            pre.appendChild(code)
+            div.appendChild(pre)
+            hljs.highlightBlock(code);
+            break
+        case 'code block':
+            div.className = "code"
+            code.className = "language-" + data.artifact.lang
+            code.innerHTML += data.artifact.code
+            pre.appendChild(code)
+            div.appendChild(pre)
+            hljs.highlightBlock(code);
+            break
+    }
+    
+    if(data.artifact.audioSrc != null)
+    {
+      el.classList.add('audio')                   
+      el.setAttribute('sound', {src: `url(${data.artifact.audioSrc})`, on: 'click', maxDistance: 2, autoplay: false})
+    }
     
     el.appendChild(div)
     this.htmlembed = el.components.htmlembed
     this.frame = false
+
+    // if(AFRAME.utils.device.isMobile())
+    // {
+    //     let checkpoint = this.initCheckPoint({x: 0, y: -2, z: 2})
+    //     el.appendChild(checkpoint)
+    // }
   },
 
   update: function () {
@@ -309,12 +320,53 @@ AFRAME.registerComponent('wall-art', {
       this.el.setAttribute('rectframe', {height: this.htmlembed.height, width: this.htmlembed.width})
       this.frame = true
     }
+  },
+
+  initCheckPoint: function (position)
+  {
+      let checkpoint = document.createElement("a-entity")
+      checkpoint.setAttribute("checkpoint", '')
+      checkpoint.setAttribute("opacity", 0.0)
+      checkpoint.setAttribute("geometry", "primitive: ring; radiusInner: 0.6; radiusOuter: .8;")
+      checkpoint.setAttribute("material", "color: #CCC; shader: flat;")
+      checkpoint.setAttribute("position", position)
+      checkpoint.setAttribute("rotation", {x: -90, y:0, z:0})
+      checkpoint.appendChild(ring)
+
+      return checkpoint
   }
 });
 
+AFRAME.registerComponent('play-audio', {
+  schema: {
+    distance: {type:'number'}
+  },
+
+  init: function () {
+    // Do something when component first attached.
+  },
+
+  update: function () {
+    // Do something when component's data is updated.
+  },
+
+  remove: function () {
+    // Do something the component or its entity is detached.
+  },
+
+  tick: function (time, timeDelta) {
+    // Do something on every scene tick or frame.
+  }
+});
+
+
 AFRAME.registerComponent('malloci', {
     schema: {
-      md: {type: 'string'},
+      tree: {
+        default: "{}",
+        parse: JSON.parse,
+        stringify: JSON.stringify
+      },
       API: {type: 'string', default: ''},
       hallWidth: {type: 'number', default: 8},
       wallHeight: {type: 'number', default: 5}
@@ -330,7 +382,7 @@ AFRAME.registerComponent('malloci', {
       this._rig = document.getElementById("rig")
       this._camera = document.getElementById("camera")
 
-      this._tree = this.MDtoJSON(data.md)
+      this._tree = data.tree
       
       if (localStorage.getItem(this._tree.name + '_museumTree') == undefined)
       {
@@ -357,158 +409,14 @@ AFRAME.registerComponent('malloci', {
 
       if (Object.keys(oldData).length === 0) { return; }
 
-      if (data.md != oldData.md)
+      if (data.tree != oldData.tree)
       {
         while (this.el.lastElementChild) {
           this.el.removeChild(this.el.lastElementChild);
         }        
-        this._tree = this.MDtoJSON(data.md)
+        this._tree = data.tree
         this.build()
       }
-    },
-
-    MDtoJSON: function (markDown)
-    {
-        let exJSON = {}
-        exJSON.rooms = []
-
-        let subJSON = {}
-        let artifacts = []
-
-        let level = ""
-        let text = ""
-
-        let block_quote = ""
-        let code_block = ""
-
-        let in_code = false
-
-        let mdLines = markDown.split('\n')
-
-        mdLines.forEach(line => {
-            
-            let words = line.split(" ")
-
-            // Headings
-            if (words[0].charAt(0) == "#" && !in_code)
-            {
-                if(words[0] == "###") 
-                    return
-
-                level = words.shift()
-
-                if(subJSON.name != null)
-                {
-                    subJSON.text = text
-                    subJSON.artifacts = artifacts
-            
-                    text = ""
-                    artifacts = []
-
-                    if(level == "#" || level == "##")
-                    {
-                        exJSON.rooms.push(subJSON)
-                        subJSON = {}
-                    }
-                }
-                else if (text != "")
-                {
-                    exJSON.text = text
-                    exJSON.artifact = artifacts
-
-                    text = ""
-                    artifacts = []
-                }
-                if (level == "#")
-                {
-                    exJSON.name = words.join(" ")
-                }
-                subJSON.name = words.join(" ")
-            }
-
-            // Block Quotes
-            if (words[0].charAt(0) == ">" && !in_code)
-            {
-                block_quote += words.join(" ").replace(">", "").replace(/(^[\s]+|[\s]+$)/, "\n")                                
-            }
-            else if (block_quote != "")
-            {
-                artifacts.push(this.ParseArtifact(block_quote, "block quote"))
-                block_quote = ""
-            }
-
-            // Code Blocks
-            if (words[0].includes("```") && !in_code)
-            {
-                code_block += line + "\n"
-                in_code = true
-            }
-            else if(in_code)
-            {
-                if(line.includes("```"))
-                    in_code = false
-                code_block += line + "\n"
-            }
-            else if (code_block == "" && words[0].charAt(0) == "`")
-            {
-                code_block += line + '\n'
-                artifacts.push(this.ParseArtifact(code_block, "code"))
-                code_block = ""
-            }
-            else if ( !in_code && code_block != "")
-            {
-                artifacts.push(this.ParseArtifact(code_block, "code block"))
-                code_block = ""
-            }            
-
-            // Images
-            if (words[0].charAt(0) == "!" && !in_code)
-            {
-                artifacts.push(this.ParseArtifact(line, "image"))
-            }
-
-
-            text += line + '\n'
-        })
-
-        if(subJSON.name != null)
-        {
-            subJSON.text = text
-            subJSON.artifacts = artifacts
-
-            text = ""
-            artifacts = []
-
-            exJSON.rooms.push(subJSON)
-            subJSON = {}
-        }        
-        return exJSON
-    },
-
-    ParseArtifact: function (text, type)
-    {
-        let artifact = {}
-        artifact.type = type
-
-        switch(type)
-        {
-            case 'image':
-                artifact.src = text.substring(text.lastIndexOf("(") + 1, text.lastIndexOf(")"))
-                artifact.alt = text.substring(text.lastIndexOf("[") + 1, text.lastIndexOf("]"))
-                break
-            case 'block quote':
-                artifact.text = text
-                break
-            case 'code':
-                artifact.code = text.replace(/`/g, "").replace('\n', '')
-                break
-            case 'code block':
-                let cleaned = text.replace(/`/g, "")
-                artifact.lang = cleaned.split("\n")[0]
-                artifact.code = cleaned.replace(artifact.lang + '\n', '')
-                break
-        }
-        return artifact
     },
 
     GenerateArtifacts: async function ()

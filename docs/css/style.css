@@ -15,7 +15,9 @@
 /* VR HTML Embed grid system */
 .frame {
     width: 1024px;
+    height: auto;
     font-size: 20pt;
+    background-color: #fff;
 }
 
 .word-art {

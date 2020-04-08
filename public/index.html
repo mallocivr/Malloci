@@ -8,12 +8,11 @@
     <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v6.1.0/dist/aframe-extras.min.js"></script> 
     <script src="https://supereggbert.github.io/aframe-htmlembed-component/dist/build.js"></script>
 
-    <script src="https://rawgit.com/fernandojsg/aframe-teleport-controls/master/dist/aframe-teleport-controls.min.js"></script>
-
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/styles/default.min.css">
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.18.1/highlight.min.js"></script>
 
     <!-- our shit -->
+    <script src="js/aframe-teleport-controls.js"></script>
     <script src="js/components.js"></script>
     <script src="js/seedrandom.min.js"></script>
     <link rel="stylesheet" type="text/css" href="css/simple-grid.min.css">
@@ -38,14 +37,16 @@
                   rotation="0 180 0">
           <a-camera id="camera"
           look-controls="pointerLockEnabled: true">
-          </a-camera>
-          <a-entity oculus-touch-controls="hand: left" teleport-controls="collisionEntities: .scenery; landingMaxAngle: 45; button: trigger; cameraRig: #rig; teleportOrigin: #camera;"></a-entity>
-          <a-entity oculus-touch-controls="hand: right" teleport-controls="collisionEntities: .scenery; landingMaxAngle: 45; button: trigger; cameraRig: #rig; teleportOrigin: #camera;"></a-entity>
+          <!-- <a-cursor></a-cursor> -->
+          </a-camera> 
+          <a-entity laser-controls="hand: left" raycaster="objects: .audio; far: 3" teleport-controls="collisionEntities: .scenery; drawForAllCollisions: false; landingMaxAngle: 45; button: trigger; cameraRig: #rig; teleportOrigin: #camera;"></a-entity>
+          <a-entity laser-controls="hand: right" raycaster="objects: .audio; far: 3" teleport-controls="collisionEntities: .scenery; drawForAllCollisions: false; landingMaxAngle: 45; button: trigger; cameraRig: #rig; teleportOrigin: #camera;"></a-entity>
         </a-entity>
       </a-scene>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
+    <script src="js/vrmd-parser.js"></script>
     <script src="js/index.js"></script>
   </body>
 </html>
