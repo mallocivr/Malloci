@@ -20,7 +20,7 @@ let md = ""
 xmlhttp.onreadystatechange = function(){
     md = xmlhttp.responseText;
 };
-xmlhttp.open("GET","./md/index.md",false);
+xmlhttp.open("GET","md/index.md",false);
 xmlhttp.send();
 
 let tree = vrmdParser.parse(md)
