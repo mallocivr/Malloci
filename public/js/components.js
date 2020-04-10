@@ -384,20 +384,12 @@ AFRAME.registerComponent('malloci', {
       
       this._tree = data.tree
       
-      if (localStorage.getItem(this._tree.name + '_museumTree') == undefined)
+      if (data.API != '')
       {
-        if (data.API != '')
-        {
-          this.GenerateArtifacts()        
-        }
-        else
-        {
-          this.build()
-        }
+        this.GenerateArtifacts()        
       }
       else
       {
-        this._tree = JSON.parse(localStorage.getItem(this._tree.name + '_museumTree'))
         this.build()
       }
 
