@@ -106,8 +106,33 @@ AFRAME.registerComponent('wall', {
         {
           artifact.setAttribute("position", {x:  artWidth * i, y: 1.52, z: -0.2})
           artifact.setAttribute('rotation', {x: 0, y: 180, z: 0})
-        } 
+
+          if(AFRAME.utils.device.isMobile())
+          {
+              this.el.appendChild(this.initCheckPoint({x: artWidth * i, y: 0.1, z: -2}))
+          }
+        }
+        else
+        {
+          if(AFRAME.utils.device.isMobile())
+          {
+              this.el.appendChild(this.initCheckPoint({x: artWidth * i, y: 0.1, z: 2}))
+          }
+        }
     }
+  },
+
+  initCheckPoint: function (position)
+  {
+      let checkpoint = document.createElement("a-plane")
+      checkpoint.setAttribute("checkpoint", '')
+      checkpoint.setAttribute("class", "clickable")
+      checkpoint.setAttribute("geometry", "primitive: ring; radiusInner: 0.6; radiusOuter: .8;")
+      checkpoint.setAttribute("material", "color: #CCC; shader: flat;")
+      checkpoint.setAttribute("position", position)
+      checkpoint.setAttribute("rotation", {x: -90, y:0, z:0})
+
+      return checkpoint
   }
 });
 
@@ -286,19 +311,13 @@ AFRAME.registerComponent('wall-art', {
     
     if(data.artifact.audioSrc != null)
     {
-      el.classList.add('audio')                   
+      el.classList.add('clickable')                   
       el.setAttribute('sound', {src: `url(${data.artifact.audioSrc})`, on: 'click', maxDistance: 2, autoplay: false})
     }
     
     el.appendChild(div)
     this.htmlembed = el.components.htmlembed
     this.frame = false
-
-    // if(AFRAME.utils.device.isMobile())
-    // {
-    //     let checkpoint = this.initCheckPoint({x: 0, y: -2, z: 2})
-    //     el.appendChild(checkpoint)
-    // }
   },
 
   update: function () {
@@ -320,21 +339,9 @@ AFRAME.registerComponent('wall-art', {
       this.el.setAttribute('rectframe', {height: this.htmlembed.height, width: this.htmlembed.width})
       this.frame = true
     }
-  },
-
-  initCheckPoint: function (position)
-  {
-      let checkpoint = document.createElement("a-entity")
-      checkpoint.setAttribute("checkpoint", '')
-      checkpoint.setAttribute("opacity", 0.0)
-      checkpoint.setAttribute("geometry", "primitive: ring; radiusInner: 0.6; radiusOuter: .8;")
-      checkpoint.setAttribute("material", "color: #CCC; shader: flat;")
-      checkpoint.setAttribute("position", position)
-      checkpoint.setAttribute("rotation", {x: -90, y:0, z:0})
-      checkpoint.appendChild(ring)
-
-      return checkpoint
   }
+
+  
 });
 
 AFRAME.registerComponent('play-audio', {
@@ -381,6 +388,7 @@ AFRAME.registerComponent('malloci', {
       this._roomWidth = data.hallWidth
       this._rig = document.getElementById("rig")
       this._camera = document.getElementById("camera")
+      
       
       this._tree = data.tree
       

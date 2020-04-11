@@ -3,17 +3,18 @@ const vrmdParser = new VRMD()
 const rig = document.getElementById("rig")
 const camera = document.getElementById("camera")
 
-// if(AFRAME.utils.device.isMobile())
-// {
-//     rig.setAttribute("movement-controls", "controls: checkpoint")
-//     rig.setAttribute("checkpoint-controls", "mode: teleport")
-//     let cursor = document.createElement("a-entity")
-//     cursor.setAttribute("cursor", "fuse: true; fuseTimeout: 500")
-//     cursor.setAttribute("position", {x: 0, y: 0, z: -1})
-//     cursor.setAttribute("geometry", "primitive: ring; radiusInner: 0.01; radiusOuter: 0.02;")
-//     cursor.setAttribute("material", "color: #CCC; shader: flat;")
-//     camera.appendChild(cursor)
-// }
+if(AFRAME.utils.device.isMobile())
+{
+    rig.setAttribute("movement-controls", "controls: checkpoint")
+    rig.setAttribute("checkpoint-controls", "mode: teleport")
+    let cursor = document.createElement("a-entity")
+    cursor.setAttribute("cursor", "fuse: true; fuseTimeout: 500")
+    cursor.setAttribute("raycaster", "far: 2; objects: .clickable")
+    cursor.setAttribute("position", {x: 0, y: 0, z: -1})
+    cursor.setAttribute("geometry", "primitive: ring; radiusInner: 0.01; radiusOuter: 0.02;")
+    cursor.setAttribute("material", "color: #CCC; shader: flat;")
+    camera.appendChild(cursor)
+}
 
 let md = ""
 
