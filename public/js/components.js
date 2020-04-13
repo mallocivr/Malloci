@@ -737,8 +737,10 @@ AFRAME.registerComponent('malloci', {
     },
 
     CreateJumpTo: function(roomName, x, z, rotation)
-    {        
-        let title = document.getElementById(roomName.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g,"").replace(/ /g, '-'))
+    {    
+      console.log(roomName.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=_`~()?]/g,"").replace(/ /g, '-'));
+          
+        let title = document.getElementById(roomName.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=_`~()?]/g,"").replace(/ /g, '-'))
 
         if(title == undefined) return;
 
