@@ -1,4 +1,4 @@
-const vrmdParser = new VRMD()
+const vrmdParser = new Utils.VRMD()
 
 const renderButton = document.getElementById('RenderVRMD')
 const scene = document.querySelector('a-scene')

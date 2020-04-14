@@ -1,5 +1,5 @@
 const xmlhttp = new XMLHttpRequest()
-const vrmdParser = new VRMD()
+const vrmdParser = new Utils.VRMD()
 const rig = document.getElementById("rig")
 const camera = document.getElementById("camera")
 
