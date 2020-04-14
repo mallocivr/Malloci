@@ -25,6 +25,8 @@ class VRMD
 
         let in_code = false
 
+        let hidden_block = false
+
         let mdLines = markDown.split('\n')
 
         for(let i = 0; i < mdLines.length; i++)
@@ -142,6 +144,17 @@ class VRMD
             if (words[0].charAt(0) == "^" && !in_code)
             {
                 this.addAudio(artifacts, line)
+                mdLines.splice(i, 1)
+                --i
+            }
+            // Hidden Artifact
+            if (words[0] == "~" && !in_code)
+            {
+                hidden_block = !hidden_block
+            }
+
+            if (hidden_block || (words[0] == "~" && !in_code))
+            {
                 mdLines.splice(i, 1)
                 --i
             }

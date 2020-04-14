@@ -58,11 +58,11 @@ The Duke of Florence probably arranged his collection according to the four Aris
 
 British Museum is the embodiment of the Enlightenment ideas of the XVIIIth century. Constructed in 1750 by Sir. Robert Smirke, it served as a gift to the British nation and the temple of modern knowledge. Its vast galleries allowed visitors to marvel in wonders from the world of art, architecture, botany, biology and science. Although part of the copious collections was later moved to other buildings, the British museum remained a symbol of the colonial ideals of the time. 
 
-
+~
 ![British Museum](https://upload.wikimedia.org/wikipedia/commons/3/3a/British_Museum_from_NE_2.JPG)
 ![British Museum inside](https://numismag.com/wp-content/uploads/2019/06/british-museum.jpg)
 ![British Museum inside 2](https://upload.wikimedia.org/wikipedia/commons/6/69/Inside_the_British_Museum%2C_London_-_DSC04207.JPG)
-
+~
 ##### White Cube
 
 > The sanctity of the space should be protected at all cost
