@@ -274,7 +274,6 @@ AFRAME.registerComponent('wall-art', {
     switch(data.artifact.type)
     {
         case 'image':
-            el.classList.add("img-frame")
             el.setAttribute("id", data.artifact.alt)
             div.className = "vr-img"
             el.className = "img-frame"
@@ -737,9 +736,11 @@ AFRAME.registerComponent('malloci', {
     },
 
     CreateJumpTo: function(roomName, x, z, rotation)
-    {        
+    {    
+      console.log(roomName.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=_`~()?]/g,"").replace(/ /g, '-'));
+          
         let title = document.getElementById(roomName.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=_`~()?]/g,"").replace(/ /g, '-'))
-        
+
         if(title == undefined) return;
 
         let jumpButton = document.createElement('img')

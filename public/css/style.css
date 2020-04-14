@@ -25,7 +25,9 @@
 }
 
 .img-frame {
+    max-width: 1256px;
     text-align: center;
+    display: inline-block;
 }
 
 .vr-col-1 {
@@ -69,13 +71,14 @@
 }
 
 .vr-img{
-    margin:  0 auto;
     display: inline-block;
 }
 
 .vr-img > img {
+    margin: 0;
     max-height: 680px;
-    object-fit: contain;
+    width: 100%;
+    object-fit: cover;
 }
 
 /* for testing page */
