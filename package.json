@@ -1,7 +1,6 @@
 {
-  "name": "md-to-af",
-  "description": "MD to AF.",
-  "private": true,
+  "name": "malloci",
+  "description": "A MarkDown Parser for AFrame",
   "version": "1.0.0",
   "license": "MIT",
   "scripts": {
