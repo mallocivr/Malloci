@@ -1,5 +1,3 @@
-import "aframe"
-import "aframe-extras"
 import hljs from "highlight.js"
 import "aframe-htmlembed-component"
 import "./src/components.js"
