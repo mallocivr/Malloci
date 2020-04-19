@@ -3,6 +3,7 @@
   "description": "A MarkDown Parser for AFrame",
   "version": "1.0.0",
   "license": "MIT",
+  "main": "index.js",
   "scripts": {
     "start": "node server.js",
     "deploy": "ghpages"
