@@ -46,6 +46,8 @@ AFRAME.registerComponent('wall', {
       stringify: JSON.stringify
     },
     src: {type: 'map', default: '#wallTexture'},
+    base64Mode: {type: 'boolean', default: false},
+    debug: {type: 'boolean', default: false}
   },
 
   init: function () {
@@ -99,7 +101,7 @@ AFRAME.registerComponent('wall', {
         let artObj = artifacts[i-1]
 
         let artifact = document.createElement('a-entity')
-        artifact.setAttribute('wall-art', {artifact: JSON.stringify(artObj), width: artWidth})
+        artifact.setAttribute('wall-art', {artifact: JSON.stringify(artObj), width: artWidth, debug: this.data.debug, base64Mode: this.data.base64Mode})
         this.el.appendChild(artifact)
         artifact.setAttribute("position", {x:  artWidth * i, y: 1.52, z: 0.2})
         if(this.data.orientation == "right")
@@ -255,7 +257,9 @@ AFRAME.registerComponent('wall-art', {
       parse: JSON.parse,
       stringify: JSON.stringify
     },
-    width: {type: 'number'}
+    width: {type: 'number'},
+    base64Mode: {type: 'boolean', default: false},
+    debug: {type: 'boolean', default: false}
   },
 
   init: function () {
@@ -274,6 +278,8 @@ AFRAME.registerComponent('wall-art', {
     switch(data.artifact.type)
     {
         case 'image':
+            if(data.base64Mode) data.artifact.src = this.decode(data.artifact.src)
+            if(data.debug) console.log(data.artifact.src);
             el.setAttribute("id", data.artifact.alt)
             div.className = "vr-img"
             el.className = "img-frame"
@@ -310,6 +316,8 @@ AFRAME.registerComponent('wall-art', {
     
     if(data.artifact.audioSrc != null)
     {
+      if(data.debug) console.log(data.artifact.audioSrc);
+      
       el.classList.add('clickable')                   
       el.setAttribute('sound', {src: `url(${data.artifact.audioSrc})`, on: 'click', maxDistance: 2, autoplay: false})
     }
@@ -317,6 +325,23 @@ AFRAME.registerComponent('wall-art', {
     el.appendChild(div)
     this.htmlembed = el.components.htmlembed
     this.frame = false
+  },
+
+  decode: function(src)
+  {
+    if(this.isURL(src)) return src
+    // Let us open our database
+
+    let newSrc = null
+
+    newSrc = 'data:image/jpeg;base64,' + window.btoa(localStorage.getItem(src));
+
+    return newSrc
+  },
+
+  isURL: function (s) {
+      var regexp = /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/
+      return regexp.test(s);
   },
 
   update: function () {
@@ -339,32 +364,7 @@ AFRAME.registerComponent('wall-art', {
       this.frame = true
     }
   }
-
-  
 });
-
-AFRAME.registerComponent('play-audio', {
-  schema: {
-    distance: {type:'number'}
-  },
-
-  init: function () {
-    // Do something when component first attached.
-  },
-
-  update: function () {
-    // Do something when component's data is updated.
-  },
-
-  remove: function () {
-    // Do something the component or its entity is detached.
-  },
-
-  tick: function (time, timeDelta) {
-    // Do something on every scene tick or frame.
-  }
-});
-
 
 AFRAME.registerComponent('malloci', {
     schema: {
@@ -375,7 +375,9 @@ AFRAME.registerComponent('malloci', {
       },
       API: {type: 'string', default: ''},
       hallWidth: {type: 'number', default: 8},
-      wallHeight: {type: 'number', default: 5}
+      wallHeight: {type: 'number', default: 5},
+      base64Mode: {type: 'boolean', default: false},
+      debug: {type: 'boolean', default: false}
     },
   
     /**
@@ -699,7 +701,7 @@ AFRAME.registerComponent('malloci', {
     Wall: function (id, artifacts, length, x, z, rotation, leftOrRight = "left")
     {
         let wall = document.createElement('a-entity')
-        wall.setAttribute('wall', {length: length, orientation: leftOrRight, artifacts: JSON.stringify(artifacts)})
+        wall.setAttribute('wall', {length: length, orientation: leftOrRight, artifacts: JSON.stringify(artifacts), debug: this.data.debug, base64Mode: this.data.base64Mode})
         wall.setAttribute('id', id)
         wall.setAttribute('width', length)
         wall.setAttribute('position', {x: x, y: 0, z: z})
@@ -736,7 +738,8 @@ AFRAME.registerComponent('malloci', {
     },
 
     CreateJumpTo: function(roomName, x, z, rotation)
-    {    
+    {
+      if(!roomName) return   
       console.log(roomName.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=_`~()?]/g,"").replace(/ /g, '-'));
           
         let title = document.getElementById(roomName.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=_`~()?]/g,"").replace(/ /g, '-'))
