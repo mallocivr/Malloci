@@ -1,3 +1,5 @@
+import seedrandom from "seedrandom"
+
 AFRAME.registerComponent('beam', {
   schema: {
     length: {type: 'number'},
