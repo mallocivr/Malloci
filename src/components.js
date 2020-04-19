@@ -302,7 +302,7 @@ AFRAME.registerComponent('wall-art', {
             code.innerHTML += data.artifact.code
             pre.appendChild(code)
             div.appendChild(pre)
-            Utils.hljs.highlightBlock(code);
+            hljs.highlightBlock(code);
             break
         case 'code block':
             div.className = "code"
@@ -310,7 +310,7 @@ AFRAME.registerComponent('wall-art', {
             code.innerHTML += data.artifact.code
             pre.appendChild(code)
             div.appendChild(pre)
-            Utils.hljs.highlightBlock(code);
+            hljs.highlightBlock(code);
             break
     }
     
@@ -456,7 +456,7 @@ AFRAME.registerComponent('malloci', {
         if(this._tree.theme.ceiling != null)
           document.getElementById("ceilingTexture").setAttribute("src", this._tree.theme.ceiling)
 
-        this.rng = new Utils.seedrandom(this._tree.name)
+        this.rng = new seedrandom(this._tree.name)
         let rooms = this._tree.rooms
         this.el.appendChild(this.Wall('north', [], this._roomWidth, 0, 0, 0))
 
@@ -747,7 +747,7 @@ AFRAME.registerComponent('malloci', {
         if(title == undefined) return;
 
         let jumpButton = document.createElement('img')
-        jumpButton.setAttribute("src", Utils.Icon)
+        jumpButton.setAttribute("src", Icon)
         jumpButton.setAttribute("class", "jump")
 
         jumpButton.addEventListener('click', () => {
