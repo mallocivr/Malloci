@@ -1,4 +1,5 @@
 import seedrandom from "seedrandom"
+import hljs from "highlight.js"
 
 AFRAME.registerComponent('beam', {
   schema: {
