@@ -37,14 +37,14 @@ export default class VRMD
             let words = line.split(" ")            
 
             // Headings
-            if (words[0].charAt(0) == "#" && !in_code)
+            if (words[0].charAt(0) === "#" && !in_code)
             {
                 if(words[0].includes("###")) 
                     continue
 
                 level = words.shift()
 
-                if(subJSON.name != null)
+                if(subJSON.name !== null)
                 {
                     subJSON.text = text
                     subJSON.artifacts = artifacts
@@ -52,13 +52,13 @@ export default class VRMD
                     text = ""
                     artifacts = []
 
-                    if(level == "#" || level == "##")
+                    if(level === "#" || level === "##")
                     {
                         exJSON.rooms.push(subJSON)
                         subJSON = {}
                     }
                 }
-                else if (text != "")
+                else if (text !== "")
                 {
                     exJSON.text = text
                     exJSON.artifact = artifacts
@@ -66,7 +66,7 @@ export default class VRMD
                     text = ""
                     artifacts = []
                 }
-                if (level == "#")
+                if (level === "#")
                 {
                     exJSON.name = words.join(" ")
                 }
@@ -74,11 +74,11 @@ export default class VRMD
             }
 
             // Block Quotes
-            if (words[0].charAt(0) == ">" && !in_code)
+            if (words[0].charAt(0) === ">" && !in_code)
             {
                 block_quote += words.join(" ").replace(">", "").replace(/(^[\s]+|[\s]+$)/, "\n")                                
             }
-            else if (block_quote != "")
+            else if (block_quote !== "")
             {
             artifacts.push(this.parseArtifact(block_quote, "block quote"))
             block_quote = ""
@@ -96,32 +96,34 @@ export default class VRMD
                     in_code = false
                 code_block += line + "\n"
             }
-            else if (code_block == "" && words[0].charAt(0) == "`")
+            else if (code_block === "" && words[0].charAt(0) === "`")
             {
                 code_block += line + '\n'
                 artifacts.push(this.parseArtifact(code_block, "code"))
                 code_block = ""
             }
-            else if ( !in_code && code_block != "")
+            else if ( !in_code && code_block !== "")
             {
                 artifacts.push(this.parseArtifact(code_block, "code block"))
                 code_block = ""
             }            
 
             // Images
-            if (words[0].charAt(0) == "!" && !in_code)
+            if (words[0].charAt(0) === "!" && !in_code)
             {
                 artifacts.push(this.parseArtifact(line, "image"))
             }
 
             // VRMD EXTENDED SYNTAX
             // Theme
-            if (words[0].charAt(0) == "$" && !in_code)
+            if (words[0].charAt(0) === "$" && !in_code)
             {
                 let field = line.substring(line.lastIndexOf("[") + 1, line.lastIndexOf("]"))
                 let textureSrc = line.substring(line.lastIndexOf("(") + 1, line.lastIndexOf(")"))
 
                 switch (field) {
+                    default:
+                        break
                     case 'floor':
                         exJSON.theme.floor = textureSrc
                         break
@@ -136,26 +138,26 @@ export default class VRMD
                 --i
             }
             //3D models (.GLTF)
-            if (words[0].charAt(0) == "&" && !in_code)
+            if (words[0].charAt(0) === "&" && !in_code)
             {
                 artifacts.push(this.parseArtifact(line, "3D"))
                 mdLines.splice(i, 1)
                 --i
             }
             // Audio
-            if (words[0].charAt(0) == "^" && !in_code)
+            if (words[0].charAt(0) === "^" && !in_code)
             {
                 this.addAudio(artifacts, line)
                 mdLines.splice(i, 1)
                 --i
             }
             // Hidden Artifact
-            if (words[0] == "~" && !in_code)
+            if (words[0] === "~" && !in_code)
             {
                 hidden_block = !hidden_block
             }
 
-            if (hidden_block || (words[0] == "~" && !in_code))
+            if (hidden_block || (words[0] === "~" && !in_code))
             {
                 mdLines.splice(i, 1)
                 --i
@@ -169,7 +171,7 @@ export default class VRMD
             text += line + '\n'
         }
 
-        if(subJSON.name != null)
+        if(subJSON.name !== null)
         {
             subJSON.text = text
             subJSON.artifacts = artifacts
@@ -188,7 +190,7 @@ export default class VRMD
 
     parse(markDown)
     {
-        console.log("parsing");
+        console.log("parsing");        
         
         let exJSON = {}
         exJSON.rooms = []
@@ -212,17 +214,17 @@ export default class VRMD
         for(let i = 0; i < mdLines.length; i++)
         {      
             let line = mdLines[i]
-            let words = line.split(" ")            
+            let words = line.split(" ")                        
 
             // Headings
-            if (words[0].charAt(0) == "#" && !in_code)
+            if (words[0].charAt(0) === "#" && !in_code)
             {
                 if(words[0].includes("###")) 
                     continue
 
                 level = words.shift()
 
-                if(subJSON.name != null)
+                if(subJSON.name !== null)
                 {
                     subJSON.text = text
                     subJSON.artifacts = artifacts
@@ -230,13 +232,13 @@ export default class VRMD
                     text = ""
                     artifacts = []
 
-                    if(level == "#" || level == "##")
+                    if(level === "#" || level === "##")
                     {
                         exJSON.rooms.push(subJSON)
                         subJSON = {}
                     }
                 }
-                else if (text != "")
+                else if (text !== "")
                 {
                     exJSON.text = text
                     exJSON.artifact = artifacts
@@ -244,22 +246,22 @@ export default class VRMD
                     text = ""
                     artifacts = []
                 }
-                if (level == "#")
+                if (level === "#")
                 {
                     exJSON.name = words.join(" ")
                 }
                 subJSON.name = words.join(" ")
-            }
+            }            
 
             // Block Quotes
-            if (words[0].charAt(0) == ">" && !in_code)
-            {
+            if (words[0].charAt(0) === ">" && !in_code)
+            {                
                 block_quote += words.join(" ").replace(">", "").replace(/(^[\s]+|[\s]+$)/, "\n")                                
             }
-            else if (block_quote != "")
+            else if (block_quote !== "")
             {
-            artifacts.push(this.parseArtifact(block_quote, "block quote"))
-            block_quote = ""
+                artifacts.push(this.parseArtifact(block_quote, "block quote"))
+                block_quote = ""
             }
 
             // Code Blocks
@@ -274,37 +276,39 @@ export default class VRMD
                     in_code = false
                 code_block += line + "\n"
             }
-            else if (code_block == "" && words[0].charAt(0) == "`")
+            else if (code_block === "" && words[0].charAt(0) === "`")
             {
                 code_block += line + '\n'
                 artifacts.push(this.parseArtifact(code_block, "code"))
                 code_block = ""
             }
-            else if ( !in_code && code_block != "")
+            else if ( !in_code && code_block !== "")
             {
                 artifacts.push(this.parseArtifact(code_block, "code block"))
                 code_block = ""
             }            
 
             // Images
-            if (words[0].charAt(0) == "!" && !in_code)
+            if (words[0].charAt(0) === "!" && !in_code)
             {
                 artifacts.push(this.parseArtifact(line, "image"))
             }
 
             // VRMD EXTENDED SYNTAX
             // Theme
-            if (words[0].charAt(0) == "$" && !in_code)
+            if (words[0].charAt(0) === "$" && !in_code)
             {
                 let field = line.substring(line.lastIndexOf("[") + 1, line.lastIndexOf("]"))
                 let textureSrc = line.substring(line.lastIndexOf("(") + 1, line.lastIndexOf(")"))
 
-                if(this.VSCode && artifact.src && !(/^(?:\/|[a-z]+:\/\/)/.test(textureSrc)))
+                if(this.VSCode && !(/^(?:\/|[a-z]+:\/\/)/.test(textureSrc)))
                 { 
                     textureSrc = this.VSCode + textureSrc
                 }
 
                 switch (field) {
+                    default:
+                        break
                     case 'floor':
                         exJSON.theme.floor = textureSrc
                         break
@@ -319,26 +323,26 @@ export default class VRMD
                 --i
             }
             //3D models (.GLTF)
-            if (words[0].charAt(0) == "&" && !in_code)
+            if (words[0].charAt(0) === "&" && !in_code)
             {
                 artifacts.push(this.parseArtifact(line, "3D"))
                 mdLines.splice(i, 1)
                 --i
             }
             // Audio
-            if (words[0].charAt(0) == "^" && !in_code)
+            if (words[0].charAt(0) === "^" && !in_code)
             {
                 this.addAudio(artifacts, line)
                 mdLines.splice(i, 1)
                 --i
             }
             // Hidden Artifact
-            if (words[0] == "~" && !in_code)
+            if (words[0] === "~" && !in_code)
             {
                 hidden_block = !hidden_block
             }
 
-            if (hidden_block || (words[0] == "~" && !in_code))
+            if (hidden_block || (words[0] === "~" && !in_code))
             {
                 mdLines.splice(i, 1)
                 --i
@@ -347,8 +351,18 @@ export default class VRMD
             text += line + '\n'
         }
 
-        if(subJSON.name != null)
+        if(subJSON.name !== null)
         {
+            if (block_quote !== "")
+            {
+                artifacts.push(this.parseArtifact(block_quote, "block quote"))
+                block_quote = ""
+            }
+            if (code_block !== "")
+            {
+                artifacts.push(this.parseArtifact(code_block, "code block"))
+                code_block = ""
+            }
             subJSON.text = text
             subJSON.artifacts = artifacts
 
@@ -365,13 +379,15 @@ export default class VRMD
     }
 
     parseArtifact(text, type)
-    {
+    {        
         let artifact = {}
         artifact.type = type
         artifact.audioSrc = null
 
         switch(type)
         {
+            default:
+                break
             case 'image':
                 artifact.src = text.substring(text.lastIndexOf("(") + 1, text.lastIndexOf(")"))
                 artifact.alt = text.substring(text.lastIndexOf("[") + 1, text.lastIndexOf("]"))

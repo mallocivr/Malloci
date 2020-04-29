@@ -1,6 +1,3 @@
-import seedrandom from "seedrandom"
-import hljs from "highlight.js"
-
 AFRAME.registerComponent('beam', {
   schema: {
     length: {type: 'number'},
@@ -96,32 +93,33 @@ AFRAME.registerComponent('wall', {
   placeArt: function ()
   {
     let artifacts = this.data.artifacts
-    let divisor = artifacts.length + 1
-    let artWidth = this.data.length/divisor
+    let artWidth = 4
 
-    for (let i = 1; i <= artifacts.length; i++)
+    for (let i = 0; i < artifacts.length; i++)
     {
-        let artObj = artifacts[i-1]
+        let artObj = artifacts[i]
+
+        let multiplier = i == 0 ? 1 : (i*2) + 1
 
         let artifact = document.createElement('a-entity')
         artifact.setAttribute('wall-art', {artifact: JSON.stringify(artObj), width: artWidth, debug: this.data.debug, base64Mode: this.data.base64Mode})
         this.el.appendChild(artifact)
-        artifact.setAttribute("position", {x:  artWidth * i, y: 1.52, z: 0.2})
+        artifact.setAttribute("position", {x:  artWidth * multiplier, y: 1.52, z: 0.2})
         if(this.data.orientation == "right")
         {
-          artifact.setAttribute("position", {x:  artWidth * i, y: 1.52, z: -0.2})
+          artifact.setAttribute("position", {x:  artWidth * multiplier, y: 1.52, z: -0.2})
           artifact.setAttribute('rotation', {x: 0, y: 180, z: 0})
 
           if(AFRAME.utils.device.isMobile())
           {
-              this.el.appendChild(this.initCheckPoint({x: artWidth * i, y: 0.1, z: -2}))
+              this.el.appendChild(this.initCheckPoint({x: artWidth * multiplier, y: 0.1, z: -2}))
           }
         }
         else
         {
           if(AFRAME.utils.device.isMobile())
           {
-              this.el.appendChild(this.initCheckPoint({x: artWidth * i, y: 0.1, z: 2}))
+              this.el.appendChild(this.initCheckPoint({x: artWidth * multiplier, y: 0.1, z: 2}))
           }
         }
     }
@@ -145,6 +143,7 @@ AFRAME.registerComponent('floor', {
   schema: {
     width: {type: 'number'},
     depth: {type: 'number'},
+    text: {type:'string'},
     src: {type: 'map', default: '#floorTexture'},    
   },
 
@@ -159,6 +158,19 @@ AFRAME.registerComponent('floor', {
 
     el.setObject3D('mesh', floorMesh)
     floorMesh.position.set(data.depth/2, 0, -data.width/2)
+    if(data.text)
+    {
+      let direction = document.createElement('a-entity')
+      let div = document.createElement('div')
+      direction.setAttribute('htmlembed', {ppu: 256, styleSheetId: "malloci-style"})
+      div.innerHTML = data.text
+      direction.classList.add('sign')
+      div.classList.add('section')
+      direction.setAttribute('position', {x: data.depth - 1, y: 0.1, z: -(data.width/2)})
+      direction.setAttribute('rotation', {x: -90, y: -90, z: 0})
+      direction.appendChild(div)
+      el.appendChild(direction)
+    }
   },
 
   update: function () {
@@ -218,7 +230,8 @@ AFRAME.registerComponent('rectframe', {
   schema: {
     height: {type:'number'},
     width: {type:'number'},
-    src: {type: 'map', default: '#floorTexture'},    
+    wordart: {type: 'boolean', default: false},
+    src: {type: 'map', default: '#frameTexture'},    
   },
 
  init: function() {
@@ -229,12 +242,20 @@ AFRAME.registerComponent('rectframe', {
      // create two geometries, one for vert, one for hor
      let geomVert = new THREE.BoxBufferGeometry(0.04, data.width, 0.04);
      let geomHor = new THREE.BoxBufferGeometry(0.04, data.height, 0.04);
-
+    let mat
      // duplicate the geometries twice
-     let frameTop = new THREE.Mesh(geomHor, new THREE.MeshStandardMaterial({map: texture}));
-     let frameBottom = new THREE.Mesh(geomHor, new THREE.MeshStandardMaterial({map: texture}));
-     let frameRight = new THREE.Mesh(geomVert, new THREE.MeshStandardMaterial({map: texture}));
-     let frameLeft = new THREE.Mesh(geomVert, new THREE.MeshStandardMaterial({map: texture}));
+     if(data.wordart)
+     {
+        mat = new THREE.MeshBasicMaterial({color: "#ffffff"})
+     }
+     else
+     {
+       mat = new THREE.MeshBasicMaterial({map: texture})
+     }
+     let frameTop = new THREE.Mesh(geomHor, mat);
+     let frameBottom = new THREE.Mesh(geomHor, mat);
+     let frameRight = new THREE.Mesh(geomVert, mat);
+     let frameLeft = new THREE.Mesh(geomVert, mat);
 
      //set positions and rotation
      frameTop.position.set(geomVert.parameters.height/2 - 0.02, 0, 0.0);
@@ -270,11 +291,11 @@ AFRAME.registerComponent('wall-art', {
     let data = this.data
     let el = this.el
     let div = document.createElement('div')
-    let pre = document.createElement("pre")
-    let code = document.createElement("code")
+    let pre
+    let code
 
     el.className = "frame"
-    el.setAttribute("htmlembed", "")
+    el.setAttribute("htmlembed", {ppu: 256, styleSheetId: "malloci-style"})
 
     let artClassNum =  6
 
@@ -282,44 +303,55 @@ AFRAME.registerComponent('wall-art', {
     {
         case 'image':
             if(data.base64Mode) data.artifact.src = this.decode(data.artifact.src)
-            if(data.debug) console.log(data.artifact.src);
+            if(data.debug) console.log("img art",data.artifact.src);
             el.setAttribute("id", data.artifact.alt)
             div.className = "vr-img"
             el.className = "img-frame"
             let image = document.createElement('img')
             image.setAttribute('src', data.artifact.src)
+
+            let caption = document.createElement('div')
+            caption.className = "caption"
+            caption.innerHTML = data.artifact.alt
+
             div.appendChild(image)
+            div.appendChild(caption)
+
             break
         case 'block quote':
-            div.className = "vr-col-" + artClassNum
-            el.classList.add('block-quote')                   
+            div.classList.add("vr-col-" + artClassNum)
+            div.classList.add('block-quote')                   
             div.innerHTML += data.artifact.text
             break
         case 'word art':
+            div.classList.add("vr-col-" + artClassNum)
             el.classList.add('word-art')                   
-            div.className = "vr-col-" + artClassNum
             div.innerHTML += data.artifact.html
             break
         case 'code':
             div.className = "code"
+            pre = document.createElement("pre")
+            code = document.createElement("code")
             code.innerHTML += data.artifact.code
             pre.appendChild(code)
             div.appendChild(pre)
-            hljs.highlightBlock(code);
+            Utils.hljs.highlightBlock(code);
             break
         case 'code block':
             div.className = "code"
+            pre = document.createElement("pre")
+            code = document.createElement("code")
             code.className = "language-" + data.artifact.lang
             code.innerHTML += data.artifact.code
             pre.appendChild(code)
             div.appendChild(pre)
-            hljs.highlightBlock(code);
+            Utils.hljs.highlightBlock(code);
             break
     }
     
     if(data.artifact.audioSrc != null)
     {
-      if(data.debug) console.log(data.artifact.audioSrc);
+      if(data.debug) console.log("audio", data.artifact.audioSrc);
       
       el.classList.add('clickable')                   
       el.setAttribute('sound', {src: `url(${data.artifact.audioSrc})`, on: 'click', maxDistance: 2, autoplay: false})
@@ -337,7 +369,7 @@ AFRAME.registerComponent('wall-art', {
 
     let newSrc = null
 
-    newSrc = 'data:image/jpeg;base64,' + window.btoa(localStorage.getItem(src));
+    newSrc = 'data:image/jpeg;base64,' + window.btoa(sessionStorage.getItem(src));
 
     return newSrc
   },
@@ -357,17 +389,57 @@ AFRAME.registerComponent('wall-art', {
 
   tick: function (time, timeDelta) {
     // Do something on every scene tick or frame.
-    if (this.el.classList.contains('word-art'))
-    {
-      this.frame = true
-    }
     if (!this.frame && this.htmlembed.width > 0) 
     {
-      this.el.setAttribute('rectframe', {height: this.htmlembed.height, width: this.htmlembed.width})
+      if (this.el.classList.contains('word-art'))
+      {
+        this.el.setAttribute('rectframe', {height: this.htmlembed.height, width: this.htmlembed.width, wordart: true})
+      }
+      else
+      {
+        this.el.setAttribute('rectframe', {height: this.htmlembed.height, width: this.htmlembed.width})
+      }
       this.frame = true
     }
   }
 });
+
+AFRAME.registerComponent('signage', {
+  schema: {
+    text: {type: 'string'},
+    subsection: {type: 'boolean', default: false}
+  },
+
+  init: function () {
+    // Do something when component first attached.
+    let el = this.el
+    let data = this.data
+    let div = document.createElement('div')
+
+    el.classList.add("signage")
+    if (data.subsection) el.classList.add("subsection")
+    el.setAttribute("htmlembed", {ppu: 256, styleSheetId: "malloci-style"})
+    div.innerHTML += data.artifact.text
+    el.appendChild(div)
+
+    el.setAttribute("position", {x:  artWidth * multiplier, y: 1.52, z: -0.2})
+    el.setAttribute('rotation', {x: 0, y: 180, z: 0})
+
+  },
+
+  update: function () {
+    // Do something when component's data is updated.
+  },
+
+  remove: function () {
+    // Do something the component or its entity is detached.
+  },
+
+  tick: function (time, timeDelta) {
+    // Do something on every scene tick or frame.
+  }
+});
+
 
 AFRAME.registerComponent('malloci', {
     schema: {
@@ -376,7 +448,7 @@ AFRAME.registerComponent('malloci', {
         parse: JSON.parse,
         stringify: JSON.stringify
       },
-      API: {type: 'string', default: ''},
+      API: {type: 'string', default: null},
       hallWidth: {type: 'number', default: 8},
       wallHeight: {type: 'number', default: 5},
       base64Mode: {type: 'boolean', default: false},
@@ -393,12 +465,15 @@ AFRAME.registerComponent('malloci', {
       this._rig = document.getElementById("rig")
       this._camera = document.getElementById("camera")
       
+
+      if(data.debug) console.log(data);
+      
       
       this._tree = data.tree
       
-      if (data.API != '')
+      if (data.API)
       {
-        this.GenerateArtifacts()        
+        this.GenerateArtifacts()       
       }
       else
       {
@@ -412,6 +487,12 @@ AFRAME.registerComponent('malloci', {
       let data = this.data;
 
       if (Object.keys(oldData).length === 0) { return; }
+
+      if(data.debug){
+        console.log("old data", oldData.tree);
+        console.log("new data", data.tree);
+      } 
+      
 
       if (data.tree != oldData.tree)
       {
@@ -429,22 +510,22 @@ AFRAME.registerComponent('malloci', {
             method: 'POST', // *GET, POST, PUT, DELETE, etc.
             mode: 'cors', // no-cors, *cors, same-origin
             cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: 'same-origin', // include, *same-origin, omit
+            credentials: 'omit', // include, *same-origin, omit
             headers: {
+              'Accept': 'application/json',
               'Content-Type': 'application/json'
-              // 'Content-Type': 'application/x-www-form-urlencoded',
             },
             redirect: 'follow', // manual, *follow, error
             referrerPolicy: 'no-referrer', // no-referrer, *client
             body: JSON.stringify(this._tree) // body data type must match "Content-Type" header
           })
           if (!response.ok) {
-            throw new Error('Network response was not ok');
+            console.error("bad response, loading user defined tree")
+            this.build()
           }
           else
           {
             this._tree = await response.json()
-            localStorage.setItem(this._tree.name + '_museumTree', JSON.stringify(this._tree))
             this.build()
           }
           return
@@ -459,7 +540,7 @@ AFRAME.registerComponent('malloci', {
         if(this._tree.theme.ceiling != null)
           document.getElementById("ceilingTexture").setAttribute("src", this._tree.theme.ceiling)
 
-        this.rng = new seedrandom(this._tree.name)
+        this.rng = new Utils.seedrandom(this._tree.name)
         let rooms = this._tree.rooms
         this.el.appendChild(this.Wall('north', [], this._roomWidth, 0, 0, 0))
 
@@ -482,13 +563,13 @@ AFRAME.registerComponent('malloci', {
                 for( let srn = 1; srn <= room.subrooms.length ; srn++)
                 {
                     let subroom = room.subrooms[srn - 1]
-                    roomDepth += subroom.artifacts.length * 3.2
+                    roomDepth += subroom.artifacts.length * 4 + 3
 
                 }
             }
             else
             {
-                roomDepth =  room.artifacts.length * 3.2
+                roomDepth = room.artifacts.length * 4 + 3
             }
 
             if(roomDepth < this._roomWidth)
@@ -501,10 +582,9 @@ AFRAME.registerComponent('malloci', {
             let leftWall = null
             let rightWall = null
 
-            let split = Math.floor(room.artifacts.length/2)
-
-            let leftArtifacts = room.artifacts.slice(0, split)
-            let rightArtifacts = room.artifacts.slice(split)
+            let oddIndexedArtifacts = room.artifacts.filter((v,i) => { return i % 2})
+            let evenIndexedArtifacts = room.artifacts.filter((v,i) => { return !(i % 2)})
+            
 
             let lengthr = 0
             let lengthl = 0
@@ -520,6 +600,10 @@ AFRAME.registerComponent('malloci', {
                     lengthr = roomDepth + (this._roomWidth)
                     lengthl = roomDepth 
                     floorLength = lengthl
+
+                    rightWall = this.Wall(rightId, evenIndexedArtifacts, lengthr, xr, zr, rot, "right")
+                    leftWall = this.Wall(leftId, oddIndexedArtifacts, lengthl, xl, zl, rot)
+
                 }
                 else // turn right
                 {
@@ -527,12 +611,13 @@ AFRAME.registerComponent('malloci', {
                     lengthr = roomDepth 
                     lengthl = roomDepth + (this._roomWidth)
                     floorLength = lengthr
+
+                    rightWall = this.Wall(rightId, oddIndexedArtifacts, lengthr, xr, zr, rot, "right")
+                    leftWall = this.Wall(leftId, evenIndexedArtifacts, lengthl, xl, zl, rot)
+
                 }
 
-                rightWall = this.Wall(rightId, rightArtifacts, lengthr, xr, zr, rot, "right")
-                leftWall = this.Wall(leftId, leftArtifacts, lengthl, xl, zl, rot)
-
-                rightWall.appendChild(this.floor("floor" + roomNum, this._roomWidth, floorLength, 0, 0, 0))
+                rightWall.appendChild(this.floor("floor" + roomNum, this._roomWidth, floorLength, 0, 0, 0, rooms[roomNum].name))
                 leftWall.setAttribute('ceiling', {width: this._roomWidth, roomLength: lengthl, rotateY: -90})
 
 
@@ -561,6 +646,9 @@ AFRAME.registerComponent('malloci', {
                     floorLength = !left ? lengthl : roomDepth + this._roomWidth
                     left++
                     right = 0
+
+                  rightWall = this.Wall(rightId, evenIndexedArtifacts, lengthr, xr, zr, rot, "right")
+                  leftWall = this.Wall(leftId, oddIndexedArtifacts, lengthl, xl, zl, rot)
                 }
                 else // turn right
                 {
@@ -569,19 +657,21 @@ AFRAME.registerComponent('malloci', {
                     floorLength = left > 0 ? lengthr : roomDepth + this._roomWidth
                     right++
                     left = 0
+
+                    rightWall = this.Wall(rightId, oddIndexedArtifacts, lengthr, xr, zr, rot, "right")
+                    leftWall = this.Wall(leftId, evenIndexedArtifacts, lengthl, xl, zl, rot)
                 }
 
-                rightWall = this.Wall(rightId, rightArtifacts, lengthr, xr, zr, rot, "right")
-                leftWall = this.Wall(leftId, leftArtifacts, lengthl, xl, zl, rot)
+                
 
                 if((right == 0 && left < 2) || right >= 2)
                 {
-                    leftWall.appendChild(this.floor("floor" + roomNum, this._roomWidth, floorLength, 0, this._roomWidth, 0))
+                    leftWall.appendChild(this.floor("floor" + roomNum, this._roomWidth, floorLength, 0, this._roomWidth, 0, rooms[roomNum].name))
                     rightWall.setAttribute('ceiling', {width: this._roomWidth, roomLength: floorLength, rotateY: 90})
                 }
                 else
                 {
-                    rightWall.appendChild(this.floor("floor" + roomNum, this._roomWidth, floorLength, 0, 0, 0))
+                    rightWall.appendChild(this.floor("floor" + roomNum, this._roomWidth, floorLength, 0, 0, 0, rooms[roomNum].name))
                     leftWall.setAttribute('ceiling', {width: this._roomWidth, roomLength: floorLength, rotateY: -90})
 
                 }
@@ -631,17 +721,21 @@ AFRAME.registerComponent('malloci', {
                 {
                     lengthr = roomDepth + this._roomWidth
                     lengthl = roomDepth
+
+                    rightWall = this.Wall(rightId, evenIndexedArtifacts, lengthr, xr, zr, rot, "right")
+                    leftWall = this.Wall(leftId, oddIndexedArtifacts, lengthl, xl, zl, rot)
                 }
                 else // turn right
                 {
                     lengthr = roomDepth
                     lengthl = roomDepth + this._roomWidth
+
+                    rightWall = this.Wall(rightId, oddIndexedArtifacts, lengthr, xr, zr, rot, "right")
+                    leftWall = this.Wall(leftId, evenIndexedArtifacts, lengthl, xl, zl, rot)
                 }
 
                 floorLength = roomDepth + this._roomWidth
-                rightWall = this.Wall(rightId, rightArtifacts, lengthr, xr, zr, rot, "right")
-                leftWall = this.Wall(leftId, leftArtifacts, lengthl, xl, zl, rot)
-
+                
                 if (lengthr > lengthl)
                 {
                   leftWall.setAttribute('ceiling', {width: this._roomWidth, roomLength: lengthl, rotateY: -90})
@@ -683,8 +777,6 @@ AFRAME.registerComponent('malloci', {
                 let backWall = this.Wall(leftId, [], this._roomWidth, lastx, lastz, rot - 90)
                 backWall.appendChild(this.floor("floor" + roomNum, this._roomWidth, floorLength, 0, 0, -90))
 
-
-
                 if(left > 0)
                 {
                     rot += 90
@@ -698,7 +790,12 @@ AFRAME.registerComponent('malloci', {
                 this.el.appendChild(backWall)
             }
         }
-        localStorage.setItem(this._tree.name + '_museumTree', JSON.stringify(this._tree))
+        document.addEventListener('enter-vr', (e) => {
+          document.getElementById("ambient-track").components.sound.playSound();
+        })
+        document.addEventListener('exit-vr', (e) => {
+          document.getElementById("ambient-track").components.sound.stopSound();
+        })
     },
 
     Wall: function (id, artifacts, length, x, z, rotation, leftOrRight = "left")
@@ -712,12 +809,12 @@ AFRAME.registerComponent('malloci', {
         return wall
     },
 
-    floor: function (id, width, depth, x, z, rotation)
+    floor: function (id, width, depth, x, z, rotation, nextSection = null)
     {
         let floor = document.createElement('a-entity')
         floor.setAttribute("id", id)
         floor.setAttribute('class', 'scenery')
-        floor.setAttribute('floor', {width: width, depth: depth})
+        floor.setAttribute('floor', {width: width, depth: depth, text: nextSection})
 
         floor.setAttribute('position', {x: x, y: 0, z: z})
         floor.setAttribute('rotation', {x: 0, y: rotation, z: 0})
@@ -742,15 +839,13 @@ AFRAME.registerComponent('malloci', {
 
     CreateJumpTo: function(roomName, x, z, rotation)
     {
-      if(!roomName) return   
-      console.log(roomName.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=_`~()?]/g,"").replace(/ /g, '-'));
-          
+      if(!roomName) return             
         let title = document.getElementById(roomName.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=_`~()?]/g,"").replace(/ /g, '-'))
 
         if(title == undefined) return;
 
         let jumpButton = document.createElement('img')
-        jumpButton.setAttribute("src", Icon)
+        jumpButton.setAttribute("src", Utils.Icon)
         jumpButton.setAttribute("class", "jump")
 
         jumpButton.addEventListener('click', () => {
