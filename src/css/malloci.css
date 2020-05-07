@@ -5,17 +5,16 @@
 } */
 
 .jump {
-    padding: 0 1rem;
-    height: 2rem;
-    cursor: pointer;
-}
-
-#article > p > img {
-    width: 100%
-}
-
-.title > h1 {
-    float: left;
+	height: 40pt;
+	width: 40pt;
+	padding: 5pt;
+	cursor: pointer;
+	background-color: #fff;
+	border-radius: 50%;
+	box-shadow: 2px 2px 3px #999;
+	position: fixed;
+	bottom:40px;
+	right:40px;
 }
 
 /* VR HTML Embed grid system */
@@ -29,7 +28,7 @@
 
 .sign{
 	width: 1024px;
-    height: auto;
+	height: auto;
     line-height: 1.5 
 }
 
@@ -49,6 +48,7 @@
     text-shadow: 10px 7px 15px #202020;
 	font-size: 20pt;
 	background: url("https://cdn.jsdelivr.net/gh/mallocivr/Malloci/dist/img/word-art-bg.jpg");
+	background-color: #705947;
 	background-position: center; 
   	background-repeat: no-repeat; 
   	/* background-size: contain; */
@@ -155,31 +155,6 @@
     width: 100%;
     object-fit: cover;
 }
-
-/* for testing page */
-
-.test-containter {
-    margin-left: auto;
-    margin-right: auto;
-    width: 90%
-}
-
-#mdfield, #render-window {
-    width: 100%;
-    height: 90vh;
-}
-
-#mdfield {
-    font-size: 12pt;
-}
-
-#RenderVRMD {
-    margin-left: auto;
-    margin-right: auto;
-    font-size: 12pt;
-    float: right;
-}
-
 
 /* HLJS */
 

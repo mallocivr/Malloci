@@ -39,8 +39,8 @@ export default class VRMD
             // Headings
             if (words[0].charAt(0) === "#" && !in_code)
             {
-                if(words[0].includes("###")) 
-                    continue
+                // if(words[0].includes("###")) 
+                //     continue
 
                 level = words.shift()
 
@@ -52,11 +52,11 @@ export default class VRMD
                     text = ""
                     artifacts = []
 
-                    if(level === "#" || level === "##")
-                    {
-                        exJSON.rooms.push(subJSON)
-                        subJSON = {}
-                    }
+                    // if(level === "#" || level === "##")
+                    // {
+                    exJSON.rooms.push(subJSON)
+                    subJSON = {}
+                    // }
                 }
                 else if (text !== "")
                 {
@@ -219,8 +219,8 @@ export default class VRMD
             // Headings
             if (words[0].charAt(0) === "#" && !in_code)
             {
-                if(words[0].includes("###")) 
-                    continue
+                // if(words[0].includes("###")) 
+                //     continue
 
                 level = words.shift()
 
@@ -232,11 +232,11 @@ export default class VRMD
                     text = ""
                     artifacts = []
 
-                    if(level === "#" || level === "##")
-                    {
+                    // if(level === "#" || level === "##")
+                    // {
                         exJSON.rooms.push(subJSON)
                         subJSON = {}
-                    }
+                    // }
                 }
                 else if (text !== "")
                 {
