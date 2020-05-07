@@ -78,7 +78,6 @@ class WikiParser {
     var document = parser.parseFromString(html,"text/xml");
     
     var content = document.getElementsByClassName("mw-parser-output")
-    // var paragraphs = xmlDoc.getElementsByTagName("p");
     var children = content[0].childNodes
     for (var i = 0; i < children.length; i++)  {
       var node = children[i];
@@ -108,9 +107,6 @@ class WikiParser {
         var captions = node.getElementsByClassName("thumbcaption")
         
         for (var j = 0; j < images.length; j++) {
-          // w = img['data-file-width']
-          // src = 'https:'+re.sub(r'([0-9]+)px', str(w)+'px', img['src'])
-          // elements.append(('image', (cap.text, src)))
           var w = images[j].getAttribute('data-file-width') // max width of image
           var src = "https:" + images[j].getAttribute('src').replace(/\d+px/, w+'px')
           md.push("!["+this.cleanText(captions[j].textContent)+"]("+src+")")
