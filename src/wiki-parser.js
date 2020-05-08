@@ -190,12 +190,10 @@ class WikiParser {
         var captions = node.getElementsByClassName("thumbcaption")
         
         for (var j = 0; j < images.length; j++) {
-          // w = img['data-file-width']
-          // src = 'https:'+re.sub(r'([0-9]+)px', str(w)+'px', img['src'])
-          // elements.append(('image', (cap.text, src)))
           var w = images[j].getAttribute('data-file-width') // max width of image
           var src = "https:" + images[j].getAttribute('src').replace(/\d+px/, w+'px')
-          md.push("!["+this.cleanText(captions[j].textContent)+"]("+src+")")
+          // md.push("!["+this.cleanText(captions[j].textContent)+"]("+src+")")
+          md.push("!["+this.cleanText(captions[j] ? captions[j].textContent : "") +"]("+src+")")
         }
       }
       
