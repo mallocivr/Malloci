@@ -135,7 +135,7 @@ class WikiParser {
           
           // Get out befor its too late!
           // (to escape with prob 0.5 can use || Math.random() < 0.5)
-          if (pageName == null || el.className == "new" || Math.random() < 0.3) {continue}
+          if (pageName == null || el.className == "new" || Math.random() > 0.3) {continue}
           
           // Grab an image, if possible
           // - push placeholder to the md array
