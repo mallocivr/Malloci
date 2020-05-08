@@ -157,7 +157,13 @@ class WikiParser {
             //console.log(response);
             if ('originalimage' in response) {
               //console.log('updating artifact ' + response.title + ' ' + self.imgPlaceholder[response.title])
-              self.md[self.imgPlaceholder[response.title]] = "~\n!["+response.title+"]("+response.originalimage.source+")\n~";
+              var caption = response.title;
+              if ('extract' in response) {
+                // make the first sentese of the description the image caption
+                caption = response.extract
+                caption = caption.replace(/([.?!])\s*(?=[A-Z])/g, "$1|").split("|")[0]
+              }
+              self.md[self.imgPlaceholder[response.title]] = "~\n!["+caption+"]("+response.originalimage.source+")\n~";
               delete self.imgPlaceholder[response.title]; // remove from queue
               
             }
@@ -225,7 +231,7 @@ class WikiParser {
       setTimeout(function(){self.waitForImages(limit-2, onready)}, 2000);
     }
     else {
-      // delete all unfetched images
+      // delete all remaining placeholders
       var removeIdx =[]
       for (const key in this.imgPlaceholder) {
         removeIdx.push(this.imgPlaceholder[key])
