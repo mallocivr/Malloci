@@ -104,6 +104,11 @@ class WikiParser {
  htmlToMd(title, html, parseImages) {
     // Input: HTML string
     // Returns: array of markdown strings
+
+    // control the number of rooms in the exhibit:
+    var numRooms = 1;
+    var maxRooms = 4;
+
     this.waitForImage = 0;
     this.imgPlaceholder = {};
     var md = ["# " +title]
@@ -177,9 +182,18 @@ class WikiParser {
       else if (node.nodeName.startsWith("h")) {
         var header = this.cleanText(node.textContent)
         // if reached References - time to peace out
-        if (header == "References") {
+        if (header == "References" ||
+            header == "See also" ||
+            header == "Notes") {
             break;
         }
+
+        // dont parse more than maxRooms
+        numRooms++;
+        if (numRooms > maxRooms) {
+          break;
+        }
+
         var pref = "#".repeat(parseInt(node.nodeName.charAt(1)))
         md.push(pref + " " + header)
       }
