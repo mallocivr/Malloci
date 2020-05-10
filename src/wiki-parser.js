@@ -109,6 +109,7 @@ class WikiParser {
     var numRooms = 1; // control the number of rooms in the exhibit
     
     var numImages = 0;
+    if (maxImages == null) {maxImages = 500;}
     
     this.waitForImage = 0;
     this.imgPlaceholder = {};
@@ -180,7 +181,7 @@ class WikiParser {
                   caption = response.extract
                   caption = caption.replace(/([.?!])\s*(?=[A-Z])/g, "$1|").split("|")[0]
                 }
-                self.md[self.imgPlaceholder[response.title]] = "~\n!["+caption+"]("+response.originalimage.source+")\n~";
+                self.md[self.imgPlaceholder[response.title]] = "~\n!["+caption+"]("+response.originalimage.source+"){2}\n~";
                 delete self.imgPlaceholder[response.title]; // remove from queue
               }
               
@@ -232,7 +233,7 @@ class WikiParser {
           var w = images[j].getAttribute('data-file-width') // max width of image
           var src = "https:" + images[j].getAttribute('src').replace(/\d+px/, w+'px')
           //md.push("!["+this.cleanText(captions[j].textContent)+"]("+src+")")
-          md.push("!["+this.cleanText(captions[j] ? captions[j].textContent : "") +"]("+src+")")
+          md.push("!["+this.cleanText(captions[j] ? captions[j].textContent : "") +"]("+src+"){1}")
           numImages++;
         }
       }
