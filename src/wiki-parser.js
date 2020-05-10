@@ -48,7 +48,7 @@ class WikiParser {
       .catch(function(error){console.log(error);});
   }
   
-  parse(page, maxImages, onready) {
+  parse(page, maxRooms, maxImages, onready) {
     var self = this;
     fetch(this.fetchUrl+page)
       .then(function(resp) { return resp.json();})
@@ -56,12 +56,12 @@ class WikiParser {
 
       var html = '<body>' + data.parse.text['*'] + '</body>'
       
-      self.htmlToMd(data.parse.title, html, false, maxImages)
+      self.htmlToMd(data.parse.title, html, maxRooms, false, maxImages)
       onready(self.md.join("\n\n"));
     });
   }
   
-  parseFull(page, maxImages, onready) {
+  parseFull(page, maxRooms, maxImages, onready) {
     var self = this;
     fetch(this.fetchUrl+page)
       .then(function(resp) { return resp.json();})
@@ -70,7 +70,7 @@ class WikiParser {
       var html = '<body>' + data.parse.text['*'] + '</body>'
       //var md = ["# " + data.parse.title]
       //md = md.concat(self.htmlToMd(html))
-      self.htmlToMd(data.parse.title, html, true, maxImages)
+      self.htmlToMd(data.parse.title, html, maxRooms, true, maxImages)
       //self.md = md
       /* md = md.join("\n\n") */
       /* onready(md) */
@@ -102,12 +102,11 @@ class WikiParser {
     return text
   }
   
- htmlToMd(title, html, parseImages, maxImages) {
+ htmlToMd(title, html, maxRooms, parseImages, maxImages) {
     // Input: HTML string
     // Returns: array of markdown strings
     
     var numRooms = 1; // control the number of rooms in the exhibit
-    var maxRooms = 4;
     
     var numImages = 0;
     
@@ -146,7 +145,7 @@ class WikiParser {
           
           // Get out before its too late!
           // (to escape with prob 0.5 can use || Math.random() < 0.5)
-          if (pageName == null || el.className == "new" || Math.random() > 0.3) {continue}
+          if (pageName == null || el.className == "new") {continue}
           
           // Grab an image, if possible
           // - push placeholder to the md array
@@ -204,7 +203,7 @@ class WikiParser {
         
         // dont parse more than maxRooms
         numRooms++;
-        if (numRooms > maxRooms) {
+        if (maxRooms != null && numRooms > maxRooms) {
           break;
         }
         
