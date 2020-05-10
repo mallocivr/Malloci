@@ -170,14 +170,19 @@ class WikiParser {
             //console.log(response);
             if ('originalimage' in response) {
               //console.log('updating artifact ' + response.title + ' ' + self.imgPlaceholder[response.title])
-              var caption = response.title;
-              if ('extract' in response) {
-                // make caption the first sentese of the description
-                caption = response.extract
-                caption = caption.replace(/([.?!])\s*(?=[A-Z])/g, "$1|").split("|")[0]
+
+              var size = Math.min(response.originalimage.height, response.originalimage.width);
+              if (size >= 400) { // only want large images
+
+                var caption = response.title;
+                if ('extract' in response) {
+                  // make caption the first sentese of the description
+                  caption = response.extract
+                  caption = caption.replace(/([.?!])\s*(?=[A-Z])/g, "$1|").split("|")[0]
+                }
+                self.md[self.imgPlaceholder[response.title]] = "~\n!["+caption+"]("+response.originalimage.source+")\n~";
+                delete self.imgPlaceholder[response.title]; // remove from queue
               }
-              self.md[self.imgPlaceholder[response.title]] = "~\n!["+caption+"]("+response.originalimage.source+")\n~";
-              delete self.imgPlaceholder[response.title]; // remove from queue
               
             }
             self.waitForImage--; // remove from queue
