@@ -30,6 +30,27 @@ AFRAME.registerComponent('beam', {
     el.setObject3D('mesh', mesh)
     mesh.position.set(data.length/2, data.height, 0)
 
+    this.el.sceneEl.addEventListener('ceiling-update', () => {
+      
+      let geometry = new THREE.BoxBufferGeometry(data.length, data.thickness, data.width)
+      let mat = null
+
+      if (AFRAME.utils.device.isMobile())
+      {
+        mat = new THREE.MeshBasicMaterial({color: "#91745D"})
+      }
+      else
+      {
+        let texture = new THREE.TextureLoader().load(data.src.src)
+        mat = new THREE.MeshBasicMaterial({map: texture})
+      }
+
+      let mesh = new THREE.Mesh(geometry, mat)
+
+      el.setObject3D('mesh', mesh)
+      mesh.position.set(data.length/2, data.height, 0)
+    })
+
   },
 
   update: function () {
@@ -79,12 +100,24 @@ AFRAME.registerComponent('wall', {
     el.setObject3D('mesh', wallMesh)
 
     let beam = document.createElement('a-entity')
-    beam.setAttribute('beam', `length: ${data.length + 0.2}; width: ${0.3}; thickness: ${0.5}; height: ${data.height - 0.25}`)
+    beam.setAttribute('beam', `length: ${data.length + 0.15}; width: ${0.3}; thickness: ${0.5}; height: ${data.height - 0.25}`)
 
     el.appendChild(beam)
 
     wallMesh.position.set(data.length/2, data.height/2, 0)
     if(data.orientation == "right") wallMesh.rotateY(3.14159)
+
+    this.el.sceneEl.addEventListener('walls-update', () => {
+      
+      let wallTexture = new THREE.TextureLoader().load(data.src.src)
+      let wallGeometry = new THREE.PlaneBufferGeometry(data.length, data.height)
+      let wallMaterial = new THREE.MeshBasicMaterial({map: wallTexture})
+      let wallMesh = new THREE.Mesh(wallGeometry, wallMaterial)
+
+      el.setObject3D('mesh', wallMesh)
+      wallMesh.position.set(data.length/2, data.height/2, 0)
+      if(data.orientation == "right") wallMesh.rotateY(3.14159)
+    })
 
     this.placeArt()
   },
@@ -109,28 +142,29 @@ AFRAME.registerComponent('wall', {
     for (let i = 0; i < artifacts.length; i++)
     {
         let artObj = artifacts[i]
+        let artDist = i == 0 ? 4 : 3
 
         let multiplier = i == 0 ? 1 : (i*2) + 1
 
         let artifact = document.createElement('a-entity')
         artifact.setAttribute('wall-art', {artifact: JSON.stringify(artObj), width: artWidth, debug: this.data.debug, base64Mode: this.data.base64Mode})
         this.el.appendChild(artifact)
-        artifact.setAttribute("position", {x:  artWidth * multiplier, y: 1.52, z: 0.2})
+        artifact.setAttribute("position", {x:  artDist * multiplier, y: 1.52, z: 0.2})
         if(this.data.orientation == "right")
         {
-          artifact.setAttribute("position", {x:  artWidth * multiplier, y: 1.52, z: -0.2})
+          artifact.setAttribute("position", {x:  artDist * multiplier, y: 1.52, z: -0.2})
           artifact.setAttribute('rotation', {x: 0, y: 180, z: 0})
 
           if(AFRAME.utils.device.isMobile())
           {
-              this.el.appendChild(this.initCheckPoint({x: artWidth * multiplier, y: 0.1, z: -2}))
+              this.el.appendChild(this.initCheckPoint({x: artDist * multiplier, y: 0.1, z: -2}))
           }
         }
         else
         {
           if(AFRAME.utils.device.isMobile())
           {
-              this.el.appendChild(this.initCheckPoint({x: artWidth * multiplier, y: 0.1, z: 2}))
+              this.el.appendChild(this.initCheckPoint({x: artDist * multiplier, y: 0.1, z: 2}))
           }
         }
     }
@@ -188,6 +222,16 @@ AFRAME.registerComponent('floor', {
       direction.appendChild(div)
       el.appendChild(direction)
     }
+
+    this.el.sceneEl.addEventListener('floor-update', () => {
+      
+      let floorTexture = new THREE.TextureLoader().load(data.src.src)
+      let floorGeometry = new THREE.BoxBufferGeometry(data.depth, 0.01, data.width)
+      let floorMesh = new THREE.Mesh(floorGeometry, new THREE.MeshBasicMaterial({map: floorTexture}))
+
+      el.setObject3D('mesh', floorMesh)
+      floorMesh.position.set(data.depth/2, 0, -data.width/2)
+    })
   },
 
   update: function () {
@@ -202,6 +246,7 @@ AFRAME.registerComponent('floor', {
     // Do something on every scene tick or frame.
   },
 });
+
 
 AFRAME.registerComponent('ceiling', {
   schema: {
@@ -222,15 +267,15 @@ AFRAME.registerComponent('ceiling', {
     for(let i = 0; i < data.roomLength; i += space)
     {
       let beam = document.createElement('a-entity')
-      beam.setAttribute('beam', {length: data.width, width: 0.3, thickness: 0.5, height: data.height - 0.25})
-      beam.setAttribute('position', {x: i, y: 0, z: 0})
+      beam.setAttribute('beam', {length: data.width-0.3, width: 0.3, thickness: 0.5, height: data.height - 0.25})
+      beam.setAttribute('position', {x: i, y: 0, z: data.rotateY < 0 ? 0.15 : -0.15})
       beam.setAttribute('rotation', {x: 0, y: data.rotateY, z: 0})
       el.appendChild(beam)
     }
   },
 
-  update: function () {
-    // Do something when component's data is updated.
+  update: function (oldData) {
+    
   },
 
   remove: function () {
@@ -258,7 +303,7 @@ AFRAME.registerComponent('rectframe', {
      // create two geometries, one for vert, one for hor
      let geomVert = new THREE.BoxBufferGeometry(0.04, data.width, 0.04);
      let geomHor = new THREE.BoxBufferGeometry(0.04, data.height, 0.04);
-    let mat
+      let mat
      // duplicate the geometries twice
      if(data.wordart)
      {
@@ -270,7 +315,15 @@ AFRAME.registerComponent('rectframe', {
      }
      else
      {
-      let texture = new THREE.TextureLoader().load(data.src.src)
+       let texture = null
+       if(!data.src.src)
+       {
+        texture = new THREE.TextureLoader().load(data.src)
+       }
+       else
+       {
+        texture = new THREE.TextureLoader().load(data.src.src)
+       } 
        mat = new THREE.MeshBasicMaterial({map: texture})
      }
      let frameTop = new THREE.Mesh(geomHor, mat);
@@ -292,6 +345,54 @@ AFRAME.registerComponent('rectframe', {
      obj.add(frameBottom);
      obj.add(frameRight);
      obj.add(frameLeft);
+
+     this.el.sceneEl.addEventListener('frames-update', () => {
+      
+      let geomVert = new THREE.BoxBufferGeometry(0.04, data.width, 0.04);
+     let geomHor = new THREE.BoxBufferGeometry(0.04, data.height, 0.04);
+      let mat
+     // duplicate the geometries twice
+     if(data.wordart)
+     {
+        mat = new THREE.MeshBasicMaterial({color: "#ffffff"})
+     }
+     else if (AFRAME.utils.device.isMobile())
+     {
+      mat = new THREE.MeshBasicMaterial({color: "#91745D"})
+     }
+     else
+     {
+       let texture = null
+       if(!data.src.src)
+       {
+        texture = new THREE.TextureLoader().load(data.src)
+       }
+       else
+       {
+        texture = new THREE.TextureLoader().load(data.src.src)
+       } 
+       mat = new THREE.MeshBasicMaterial({map: texture})
+     }
+     let frameTop = new THREE.Mesh(geomHor, mat);
+     let frameBottom = new THREE.Mesh(geomHor, mat);
+     let frameRight = new THREE.Mesh(geomVert, mat);
+     let frameLeft = new THREE.Mesh(geomVert, mat);
+
+     //set positions and rotation
+     frameTop.position.set(geomVert.parameters.height/2 - 0.02, 0, 0.0);
+     frameBottom.position.set(-geomVert.parameters.height/2 + 0.02, 0, 0.0);
+
+     frameRight.position.set(0, geomHor.parameters.height/2 - 0.02, 0.0);
+     frameLeft.position.set(0, -geomHor.parameters.height/2 + 0.02, 0.0);
+
+     frameRight.rotation.set(0, 0, Math.PI / 2);
+     frameLeft.rotation.set(0, 0, Math.PI / 2);
+
+     obj.add(frameTop);
+     obj.add(frameBottom);
+     obj.add(frameRight);
+     obj.add(frameLeft);
+    })
   }
 });
 
@@ -372,8 +473,9 @@ AFRAME.registerComponent('wall-art', {
     
     if(data.artifact.audioSrc != null)
     {
-      if(data.debug) console.log("audio", data.artifact.audioSrc);
-      
+      audio = document.createElement('div')
+      audio.className = 'audio'
+      div.appendChild(audio)     
       el.classList.add('clickable')                   
       el.setAttribute('sound', {src: `url(${data.artifact.audioSrc})`, on: 'click', maxDistance: 2, autoplay: false})
     }
@@ -418,7 +520,14 @@ AFRAME.registerComponent('wall-art', {
       }
       else
       {
-        this.el.setAttribute('rectframe', {height: this.htmlembed.height, width: this.htmlembed.width})
+        if(this.data.artifact.frameSrc != null)
+        {
+          this.el.setAttribute('rectframe', {height: this.htmlembed.height, width: this.htmlembed.width, src: this.data.artifact.frameSrc})
+        }
+        else
+        {
+          this.el.setAttribute('rectframe', {height: this.htmlembed.height, width: this.htmlembed.width})
+        }
       }
       this.frame = true
     }
@@ -463,16 +572,73 @@ AFRAME.registerComponent('malloci', {
       }
       
       this._tree = data.tree
-      
-      if (data.API)
+
+      if(this._tree.theme.floor != null)
       {
-        this.GenerateArtifacts()       
+        this.cropTheme(this._tree.theme.floor, 'floor').then(img => {
+          document.getElementById("floorTexture").setAttribute("src", img[0])
+          this.el.emit('floor-update')
+        })
       }
-      else
+      
+      if(this._tree.theme.walls != null)
       {
-        this.build()
+        this.cropTheme(this._tree.theme.walls, 'walls').then(img => {
+          document.getElementById("wallTexture").setAttribute("src", img[0])
+          this.el.emit('walls-update')
+        })
+      }
+      
+      if(this._tree.theme.ceiling != null)
+      {
+        this.cropTheme(this._tree.theme.ceiling, 'ceiling').then(img => {
+          document.getElementById("ceilingTexture").setAttribute("src", img[0])          
+          this.el.emit('ceiling-update')
+        })
+      }
+      if(this._tree.theme.frames != null)
+      {
+        this.cropTheme(this._tree.theme.frames, 'frames').then(img => {
+          document.getElementById("frameTexture").setAttribute("src", img[0])          
+          this.el.emit('frames-update')
+        })
+      }
+      if(this._tree.theme.sky)
+      {
+        if(this._tree.theme.sky.includes('#'))
+          this.el.sceneEl.setAttribute('background', `color: ${this._tree.theme.sky}`)
+        else
+          this.el.sceneEl.setAttribute('background', `color: rgb(${this._tree.theme.sky})`)
       }
 
+        this.rng = new Utils.seedrandom(this._tree.name)
+        this.el.appendChild(this.Wall('north', [], this._roomWidth, 0, 0, 0))
+
+        this.rooms = this._tree.rooms
+
+        this.xr = 0
+        this.xl = this._roomWidth
+        this.zr = 0
+        this.zl = 0
+        this.rot = 270
+        this.left = 0
+        this.right = 0
+
+        this.trip_wire = null
+        this.trip_wire_index = new THREE.Vector3(10000,10000,10000)
+        this.tripped = false
+
+        this.el.addEventListener('tripped', () => {
+                    
+          start = this.trip_wire_index + 1
+          end = start + 3 < this.rooms.length ? start + 3 : this.rooms.length
+          this.build(start, end)
+        })
+        this.build()
+        if(!this.data.base64Mode)
+        {
+          this.JumpTo()
+        }
     },
 
     update: function(oldData)
@@ -491,77 +657,166 @@ AFRAME.registerComponent('malloci', {
       {
         while (this.el.lastElementChild) {
           this.el.removeChild(this.el.lastElementChild);
-        }        
+        }
+               
         this._tree = data.tree
+        if(this._tree.theme.floor != null)
+        {
+          this.cropTheme(this._tree.theme.floor, 'floor').then(img => {
+            document.getElementById("floorTexture").setAttribute("src", img[0])
+            this.el.emit('floor-update')
+
+          })
+        }
+        
+        if(this._tree.theme.walls != null)
+        {
+          this.cropTheme(this._tree.theme.walls, 'walls').then(img => {
+            document.getElementById("wallTexture").setAttribute("src", img[0])
+            this.el.emit('walls-update')
+          })
+        }
+        
+        if(this._tree.theme.ceiling != null)
+        {
+          this.cropTheme(this._tree.theme.ceiling, 'ceiling').then(img => {
+            document.getElementById("ceilingTexture").setAttribute("src", img[0])          
+            this.el.emit('ceiling-update')
+          })
+        }
+        if(this._tree.theme.frames != null)
+        {
+          this.cropTheme(this._tree.theme.frames, 'frames').then(img => {
+            document.getElementById("frameTexture").setAttribute("src", img[0])          
+            this.el.emit('frames-update')
+          })
+        }
+        if(this._tree.theme.sky)
+        {
+          if(data.debug) console.log(this._tree.theme.sky, this.el.sceneEl);
+          
+          if(this._tree.theme.sky.includes('#'))
+            this.el.sceneEl.setAttribute('background', `color: ${this._tree.theme.sky}`)
+          else
+            this.el.sceneEl.setAttribute('background', `color: rgb(${this._tree.theme.sky})`)
+        }
+
+        this.rng = new Utils.seedrandom(this._tree.name)
+        this.el.appendChild(this.Wall('north', [], this._roomWidth, 0, 0, 0))
+
+        this.rooms = this._tree.rooms
+
+        this.xr = 0
+        this.xl = this._roomWidth
+        this.zr = 0
+        this.zl = 0
+        this.rot = 270
+        this.left = 0
+        this.right = 0
         this.build()
       }
     },
 
-    GenerateArtifacts: async function ()
-    {
-        const response = await fetch(this.data.API, {
-            method: 'POST', // *GET, POST, PUT, DELETE, etc.
-            mode: 'cors', // no-cors, *cors, same-origin
-            cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-            credentials: 'omit', // include, *same-origin, omit
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
-            },
-            redirect: 'follow', // manual, *follow, error
-            referrerPolicy: 'no-referrer', // no-referrer, *client
-            body: JSON.stringify(this._tree) // body data type must match "Content-Type" header
-          })
-          if (!response.ok) {
-            console.error("bad response, loading user defined tree")
-          }
-          else
-          {
-            this._tree = await response.json()
-            this.build()
-          }
-          return
+    tick: function (time, timeDelta) {
+      // let dist = this._rig.object3D.position.distanceTo(this.trip_wire)        
+      
+      // if(!this.tripped && dist < 30.0)
+      // {
+      //   console.log('tripped');
+      //   this.el.emit('tripped')
+      //   this.tripped = true
+      // }
+      // else if(dist > 30)
+      // {
+      //   this.tripped = false
+      // }
     },
 
-    build: function()
-    {
-        if(this._tree.theme.floor != null)
-          document.getElementById("floorTexture").setAttribute("src", this._tree.theme.floor)
-        if(this._tree.theme.walls != null)
-          document.getElementById("wallTexture").setAttribute("src", this._tree.theme.walls)
-        if(this._tree.theme.ceiling != null)
-          document.getElementById("ceilingTexture").setAttribute("src", this._tree.theme.ceiling)
+    cropTheme: function (url, type) {
+    
+      // we return a Promise that gets resolved with our canvas element
+      return new Promise(resolve => {
+  
+          // this image will hold our source image data
+          const inputImage = new Image();
+          inputImage.setAttribute('crossorigin',"anonymous")
+  
+          // we want to wait for our image to load
+          inputImage.onload = () => {
+  
+              // let's store the width and height of our image
+              const inputWidth = inputImage.naturalWidth;
+              const inputHeight = inputImage.naturalHeight;
+              let outputWidth = inputWidth;
+              let outputHeight = inputHeight;
+  
+              if(type==='walls'){
+                outputWidth = 2048
+                outputHeight = 1024
+              }
+              if(type==='floor'){
+                outputWidth = 1024
+                outputHeight = 2048
+              }
+              if(type === 'ceiling' || type === 'frames'){
+                outputWidth = 256
+                outputHeight = 256
+              }
 
-        this.rng = new Utils.seedrandom(this._tree.name)
-        let rooms = this._tree.rooms
-        this.el.appendChild(this.Wall('north', [], this._roomWidth, 0, 0, 0))
+              // calculate the position to draw the image at
+  
+              // create a canvas that will present the output image
+              const outputImage = document.createElement('canvas');
+              
+              // set it to the same size as the image
+              outputImage.width = outputWidth;
+              outputImage.height = outputHeight;
+  
+              // draw our image at position 0, 0 on the canvas
+              const ctx = outputImage.getContext('2d');
+              ctx.drawImage(inputImage, 0, 0, inputWidth, inputHeight, 0, 0, outputWidth, outputHeight);
+              let data = ctx.getImageData(0,0,outerWidth, outputHeight)
 
-        let xr = 0
-        let xl = this._roomWidth
-        let zr = 0
-        let zl = 0
-        let rot = 270
-        let left = 0
-        let right = 0
+              let length = data.data.length;
+              let blockSize = 30
+              let i = -4
+              let count = 0
+              let r = 0
+              let b = 0
+              let g = 0
+              while ( (i += blockSize * 4) < length ) {
+                  ++count;
+                  r += data.data[i];
+                  g += data.data[i+1];
+                  b += data.data[i+2];
+              }
+              // ~~ used to floor values
+              r = ~~(r/count);
+              g = ~~(g/count);
+              b = ~~(b/count);
+              
+              color = `rgb(${r}, ${g}, ${b})`
 
-        for(let roomNum = 1; roomNum <= rooms.length; roomNum++)
+              resolve([outputImage.toDataURL(), color]);
+          };
+  
+          // start loading our image
+          inputImage.src = url;
+      })
+      
+  },
+
+    build: function(first=1, last=this.rooms.length)
+    {      
+      last = last < this.rooms.length ? last : this.rooms.length
+      
+        for(let roomNum = first; roomNum <= last; roomNum++)
         {
-            let room = rooms[roomNum-1]
+            let room = this.rooms[roomNum-1]
 
             let roomDepth = 0
 
-            if(room.subrooms != null && room.subrooms.length != [])
-            {
-                for( let srn = 1; srn <= room.subrooms.length ; srn++)
-                {
-                    let subroom = room.subrooms[srn - 1]
-                    roomDepth += subroom.artifacts.length * 4 + 3
-                }
-            }
-            else
-            {
-                roomDepth = room.artifacts.length * 4 + 3
-            }
+            roomDepth = room.artifacts.length * 3 + 3
 
             if(roomDepth < this._roomWidth)
             {
@@ -584,139 +839,147 @@ AFRAME.registerComponent('malloci', {
             if (roomNum == 1)
             {
 
-                if(this.rng() < 0.5) // turn left
+                if(this.rng() < 0.5) // turn this.left
                 {
-                    left++
+                    this.left++
                     lengthr = roomDepth + (this._roomWidth)
                     lengthl = roomDepth 
                     floorLength = lengthl
 
-                    rightWall = this.Wall(rightId, oddIndexedArtifacts, lengthr, xr, zr, rot, "right")
-                    leftWall = this.Wall(leftId, evenIndexedArtifacts, lengthl, xl, zl, rot)
+                    rightWall = this.Wall(rightId, oddIndexedArtifacts, lengthr, this.xr, this.zr, this.rot, "right")
+                    leftWall = this.Wall(leftId, evenIndexedArtifacts, lengthl, this.xl, this.zl, this.rot)
 
                 }
-                else // turn right
+                else // turn this.right
                 {
-                    right++
+                    this.right++
                     lengthr = roomDepth 
                     lengthl = roomDepth + (this._roomWidth)
                     floorLength = lengthr
 
-                    rightWall = this.Wall(rightId, evenIndexedArtifacts, lengthr, xr, zr, rot, "right")
-                    leftWall = this.Wall(leftId, oddIndexedArtifacts, lengthl, xl, zl, rot)
+                    rightWall = this.Wall(rightId, evenIndexedArtifacts, lengthr, this.xr, this.zr, this.rot, "right")
+                    leftWall = this.Wall(leftId, oddIndexedArtifacts, lengthl, this.xl, this.zl, this.rot)
 
                 }
 
-                rightWall.appendChild(this.floor("floor" + roomNum, this._roomWidth, floorLength, 0, 0, 0, rooms[roomNum].name))
+                rightWall.appendChild(this.floor("floor" + roomNum, this._roomWidth, floorLength, 0, 0, 0, this.rooms[roomNum].name))
                 leftWall.setAttribute('ceiling', {width: this._roomWidth, roomLength: lengthl, rotateY: -90})
 
                 this.el.appendChild(rightWall)
                 this.el.appendChild(leftWall)
 
-                zr += lengthr
-                zl += lengthl
+                this.zr += lengthr
+                this.zl += lengthl
 
-                if(left > 0)
+                if(this.left> 0)
                 {
-                    rot += 90
+                    this.rot += 90
                 }
                 else 
                 {
-                    rot -= 90
+                    this.rot -= 90
                 }
 
             }
-            else if(roomNum != rooms.length)
+            else if(roomNum != this.rooms.length)
             {
-                if((this.rng() < 0.5 && left < 2) || right == 2) // turn left
+                if((this.rng() < 0.5 && this.left < 2) || this.right == 2) // turn this.left
                 {
-                    lengthr = !left ? roomDepth : roomDepth + this._roomWidth*2
+                    lengthr = !this.left ? roomDepth : roomDepth + this._roomWidth*2
                     lengthl = roomDepth
-                    floorLength = !left ? lengthl : roomDepth + this._roomWidth
-                    left++
-                    right = 0
+                    floorLength = !this.left ? lengthl : roomDepth + this._roomWidth
+                    this.left++
+                    this.right = 0
 
-                  rightWall = this.Wall(rightId, evenIndexedArtifacts, lengthr, xr, zr, rot, "right")
-                  leftWall = this.Wall(leftId, oddIndexedArtifacts, lengthl, xl, zl, rot)
+                  rightWall = this.Wall(rightId, evenIndexedArtifacts, lengthr, this.xr, this.zr, this.rot, "right")
+                  leftWall = this.Wall(leftId, oddIndexedArtifacts, lengthl, this.xl, this.zl, this.rot)
                 }
-                else // turn right
+                else // turn this.right
                 {
                     lengthr = roomDepth
-                    lengthl = left > 0 ? roomDepth : roomDepth + this._roomWidth*2
-                    floorLength = left > 0 ? lengthr : roomDepth + this._roomWidth
-                    right++
-                    left = 0
+                    lengthl = this.left > 0 ? roomDepth : roomDepth + this._roomWidth*2
+                    floorLength = this.left > 0 ? lengthr : roomDepth + this._roomWidth
+                    this.right++
+                    this.left = 0
 
-                    rightWall = this.Wall(rightId, oddIndexedArtifacts, lengthr, xr, zr, rot, "right")
-                    leftWall = this.Wall(leftId, evenIndexedArtifacts, lengthl, xl, zl, rot)
+                    rightWall = this.Wall(rightId, oddIndexedArtifacts, lengthr, this.xr, this.zr, this.rot, "right")
+                    leftWall = this.Wall(leftId, evenIndexedArtifacts, lengthl, this.xl, this.zl, this.rot)
                 }
 
-                if((right == 0 && left < 2) || right >= 2)
+                if((this.right == 0 && this.left < 2) || this.right >= 2)
                 {
-                    leftWall.appendChild(this.floor("floor" + roomNum, this._roomWidth, floorLength, 0, this._roomWidth, 0, rooms[roomNum].name))
+                    leftWall.appendChild(this.floor("floor" + roomNum, this._roomWidth, floorLength, 0, this._roomWidth, 0, this.rooms[roomNum].name))
                     rightWall.setAttribute('ceiling', {width: this._roomWidth, roomLength: floorLength, rotateY: 90})
                 }
                 else
                 {
-                    rightWall.appendChild(this.floor("floor" + roomNum, this._roomWidth, floorLength, 0, 0, 0, rooms[roomNum].name))
+                    rightWall.appendChild(this.floor("floor" + roomNum, this._roomWidth, floorLength, 0, 0, 0, this.rooms[roomNum].name))
                     leftWall.setAttribute('ceiling', {width: this._roomWidth, roomLength: floorLength, rotateY: -90})
                 }
 
                 this.el.appendChild(rightWall)
                 this.el.appendChild(leftWall)
 
-                let jx = (xr + xl)/2
-                let jz = (zr + zl)/2
+                // if(roomNum == last-1){
+                //   this.trip_wire = leftWall.object3D.position
+                //   console.log(this.trip_wire);
+                  
+                //   this.trip_wire_index = last
+                //   this.tripped = false
+                // } 
 
-                switch(rot)
+                this.rot = this.rot <= 360 ? this.rot : this.rot - 360
+                this.rot = this.rot >= 0 ? this.rot : this.rot + 360
+
+
+                switch(this.rot)
                 {
                     case 90:
-                    case 450:
-                        zr -= lengthr
-                        zl -= lengthl
+                        this.zr -= lengthr
+                        this.zl -= lengthl
                         break
                     case 180:
-                        xr -= lengthr
-                        xl -= lengthl
+                        this.xr -= lengthr
+                        this.xl -= lengthl
                         break
                     case 270:
-                        zr += lengthr
-                        zl += lengthl
+                        this.zr += lengthr
+                        this.zl += lengthl
                         break
                     case 360:
                     case 0:
-                        xr += lengthr
-                        xl += lengthl
+                        this.xr += lengthr
+                        this.xl += lengthl
                         break
                 }
 
-                if(left > 0)
+                if(this.left> 0)
                 {
-                    rot += 90
+                    this.rot += 90
                 }
                 else 
                 {
-                    rot -= 90
+                    this.rot -= 90
                 }
 
             }
             else
             {
-                if(left > 0)
+                if(this.left> 0)
                 {
                     lengthr = roomDepth + this._roomWidth
                     lengthl = roomDepth
 
-                    rightWall = this.Wall(rightId, evenIndexedArtifacts, lengthr, xr, zr, rot, "right")
-                    leftWall = this.Wall(leftId, oddIndexedArtifacts, lengthl, xl, zl, rot)
+                    rightWall = this.Wall(rightId, evenIndexedArtifacts, lengthr, this.xr, this.zr, this.rot, "right")
+                    leftWall = this.Wall(leftId, oddIndexedArtifacts, lengthl, this.xl, this.zl, this.rot)
                 }
-                else // turn right
+                else // turn this.right
                 {
                     lengthr = roomDepth
                     lengthl = roomDepth + this._roomWidth
 
-                    rightWall = this.Wall(rightId, oddIndexedArtifacts, lengthr, xr, zr, rot, "right")
-                    leftWall = this.Wall(leftId, evenIndexedArtifacts, lengthl, xl, zl, rot)
+                    rightWall = this.Wall(rightId, oddIndexedArtifacts, lengthr, this.xr, this.zr, this.rot, "right")
+                    leftWall = this.Wall(leftId, evenIndexedArtifacts, lengthl, this.xl, this.zl, this.rot)
                 }
 
                 floorLength = roomDepth + this._roomWidth
@@ -733,50 +996,46 @@ AFRAME.registerComponent('malloci', {
                 this.el.appendChild(rightWall)
                 this.el.appendChild(leftWall)
 
-                let lastx = xl
-                let lastz = zl
+                let lastx = this.xl
+                let lastz = this.zl
 
-                let jx = (xr + xl)/2
-                let jz = (zr + zl)/2
+                this.rot = this.rot <= 360 ? this.rot : this.rot - 360
+                this.rot = this.rot >= 0 ? this.rot : this.rot + 360
 
-                switch(rot)
+
+                switch(this.rot)
                 {
                     case 90:
-                    case 450:
-                        lastz = zl - lengthl
+                        lastz = this.zl - lengthl
                         break
                     case 180:
-                        lastx = xl - lengthl
+                        lastx = this.xl - lengthl
                         break
                     case 270:
-                        lastz = zl + lengthl
+                        lastz = this.zl + lengthl
                         break
                     case 360:
                     case 0:
-                        lastx = xl + lengthl
+                        lastx = this.xl + lengthl
                         break
                 }
 
-                let backWall = this.Wall(leftId, [], this._roomWidth, lastx, lastz, rot - 90)
+                let backWall = this.Wall('backwall', [], this._roomWidth, lastx, lastz, this.rot - 90)
                 backWall.appendChild(this.floor("floor" + roomNum, this._roomWidth, floorLength, 0, 0, -90))
 
-                if(left > 0)
+                if(this.left > 0)
                 {
-                    rot += 90
+                    this.rot += 90
                 }
                 else 
                 {
-                    rot -= 90
+                    this.rot -= 90
                 }
 
-                // this.CreateJumpTo(room.name, jx, jz, rot)
                 this.el.appendChild(backWall)
             }
         }
-        if(!this.data.base64Mode)
-        {
-          this.JumpTo()
-        }
+        
         document.addEventListener('enter-vr', (e) => {
           document.getElementById("ambient-track").components.sound.playSound();
         })
@@ -806,7 +1065,6 @@ AFRAME.registerComponent('malloci', {
         floor.setAttribute('position', {x: x, y: 0, z: z})
         floor.setAttribute('rotation', {x: 0, y: rotation, z: 0})
 
-        // this.CreateJumpTo(nextSection)
         return floor
     },
 
@@ -834,17 +1092,28 @@ AFRAME.registerComponent('malloci', {
         
         let htags = this.el.sceneEl.parentElement.querySelectorAll("h1, h2, h3, h4, h5, h6")
         let section = null
+        let index = 0
 
         for(let i = 0; i < htags.length; i++)
         {
           if(isInViewPort(htags[i]))
           {
             section = htags[i]
+            index = i
             break
           }
         }
 
+        console.log(section);
+        
+
         let roomsign = document.getElementById(section.getAttribute('id') + "_sign")
+        // if(!roomsign)
+        // {
+        //   start = (Math.floor(index/3)*3) + 1
+        //   end = start + 3
+        //   this.build(start, end)
+        // }
         
         let position = new THREE.Vector3();
         let v = new THREE.Vector3();

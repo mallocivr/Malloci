@@ -6,7 +6,7 @@ let params = {
     https: "/usr/local/lib/node_modules/live-server-https",
     port: 7777, // Set the server port. Defaults to 8080.
     host: process.env.IP, // Set the address to bind to. Defaults to 0.0.0.0 or process.env.IP.
-    root: "docs/", // Set root directory that's being served. Defaults to cwd.
+    root: "test/", // Set root directory that's being served. Defaults to cwd.
     open: false, // When false, it won't load your browser by default.
     cors: true,
     ignore: 'scss,my/templates', // comma-separated string for paths to ignore
