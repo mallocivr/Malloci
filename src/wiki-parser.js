@@ -131,6 +131,9 @@ class WikiParser {
       }
       // plain text
       if (node.nodeName == "p") {
+        // watch for stupid coordinates
+        if (node.textContent.startsWith("Coordinates: ")){continue;}
+        
         md.push(this.cleanText(node.textContent))
         
         if (!parseImages) { continue; }
@@ -146,7 +149,7 @@ class WikiParser {
           
           // Get out before its too late!
           // (to escape with prob 0.5 can use || Math.random() < 0.5)
-          if (pageName == null || el.className == "new" || Math.random() > 0.3) {continue}
+          if (pageName == null || el.className == "new" || pageName == "Geographic coordinate system") {continue}
           
           // Grab an image, if possible
           // - push placeholder to the md array
@@ -262,7 +265,7 @@ class WikiParser {
       setTimeout(function(){self.waitForImages(limit-2, onready)}, 2000);
     }
     else {
-      // delete all unfetched images
+      // delete all remaining placeholders
       var removeIdx =[]
       for (const key in this.imgPlaceholder) {
         removeIdx.push(this.imgPlaceholder[key])
