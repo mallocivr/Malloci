@@ -25,6 +25,8 @@ class WikiParser {
   constructor() {
     this.api = "https://en.wikipedia.org/w/api.php";
     this.fetchUrl = this.api + "?origin=*&action=parse&prop=text&format=json&page="
+    
+    this.redirectCount = 0;
   }
     
   search(query, limit, onready) {
@@ -68,14 +70,38 @@ class WikiParser {
       .then(function(data) {
 
       var html = '<body>' + data.parse.text['*'] + '</body>'
-      //var md = ["# " + data.parse.title]
-      //md = md.concat(self.htmlToMd(html))
-      self.htmlToMd(data.parse.title, html, maxRooms, true, maxImages)
-      //self.md = md
-      /* md = md.join("\n\n") */
-      /* onready(md) */
-      self.waitForImages(10, onready) // wait up to 10 seconds for Images
+      var redirectPage = self.check_redirect(html);
+      if (redirectPage == null) {
+        self.htmlToMd(data.parse.title, html, maxRooms, true, maxImages)
+        self.waitForImages(10, onready) // wait up to 10 seconds for Images
+      }else{
+        if (redirectPage != page && self.redirectCount<5) { // don't get stuck ininfinite redirect loop
+          self.redirectCount++;
+          self.parseFull(redirectPage, maxRooms, maxImages, onready);
+        } else {
+          onready("") // got nothing to do here
+        }
+      }
     });
+  }
+  
+  check_redirect(html) {
+    var parser = new DOMParser();
+    var document = parser.parseFromString(html,"text/xml");
+    
+    // check for redirects
+    try {
+      var div = document.getElementsByClassName("redirectMsg")
+      if (div.length > 0) {
+        div = div[0]
+        var link = div.getElementsByTagName("a")
+        var redirectPage = link[0].getAttribute('href').replace('/wiki/', '')
+        console.log("found redirect wiki page: " + redirectPage) 
+        return redirectPage;
+      }
+     } catch(err){
+      return null;
+     }
   }
   
   page_summary(pageName, onready) {
@@ -171,11 +197,12 @@ class WikiParser {
             //console.log(response);
             if ('originalimage' in response) {
               //console.log('updating artifact ' + response.title + ' ' + self.imgPlaceholder[response.title])
-
+              
               var size = Math.min(response.originalimage.height, response.originalimage.width);
-              if (size >= 400) { // only want large images
-
+              if (size > 400) { // only want large images
+              
                 var caption = response.title;
+
                 if ('extract' in response) {
                   // make caption the first sentese of the description
                   caption = response.extract
