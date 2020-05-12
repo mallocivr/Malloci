@@ -40,7 +40,7 @@ class WikiParser {
 
     var url = this.api + "?origin=*";
     Object.keys(params).forEach(function(key){url += "&" + key + "=" + params[key];});
-
+    console.log(url)
     fetch(url)
       .then(function(response){return response.json();})
       .then(function(response) {
@@ -137,6 +137,7 @@ class WikiParser {
     var numImages = 0;
     if (maxImages == null) {maxImages = 500;}
     
+    
     this.waitForImage = 0;
     this.imgPlaceholder = {};
     var md = ["# " +title]
@@ -146,7 +147,14 @@ class WikiParser {
     var document = parser.parseFromString(html,"text/xml");
     
     var content = document.getElementsByClassName("mw-parser-output")
-    // var paragraphs = xmlDoc.getElementsByTagName("p");
+
+    // check number of images in article
+    // if find less than maImages - can insert some linked images
+    var articleImgs = content[0].getElementsByClassName("thumbcaption")
+    var extraImages = maxImages - articleImgs.length
+    console.log("can get "+extraImages + " extra images");
+    
+    
     var children = content[0].childNodes
     for (var i = 0; i < children.length; i++)  {
             
@@ -207,9 +215,10 @@ class WikiParser {
                   // make caption the first sentese of the description
                   caption = response.extract
                   caption = caption.replace(/([.?!])\s*(?=[A-Z])/g, "$1|").split("|")[0]
-                }
-                self.md[self.imgPlaceholder[response.title]] = "~\n!["+caption+"]("+response.originalimage.source+"){2}\n~";
+                }                
+                self.md[self.imgPlaceholder[response.title]] = "~\n!["+caption+"]("+response.originalimage.source+"){"+(extraImages > 0 ? 1 : 2)+"}\n~";
                 delete self.imgPlaceholder[response.title]; // remove from queue
+                extraImages--;
               }
               
             }
