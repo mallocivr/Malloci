@@ -4,7 +4,7 @@ module.exports = {
   entry: './index.js',
   output: {
     filename: 'malloci.js',
-    path: path.resolve(__dirname, 'test/js'),
+    path: path.resolve(__dirname, 'dist/js'),
     libraryTarget: "var",
     library: "Utils"
   },
