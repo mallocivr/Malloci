@@ -142,29 +142,28 @@ AFRAME.registerComponent('wall', {
     for (let i = 0; i < artifacts.length; i++)
     {
         let artObj = artifacts[i]
-        let artDist = i == 0 ? 4 : 3
 
         let multiplier = i == 0 ? 1 : (i*2) + 1
 
         let artifact = document.createElement('a-entity')
         artifact.setAttribute('wall-art', {artifact: JSON.stringify(artObj), width: artWidth, debug: this.data.debug, base64Mode: this.data.base64Mode})
         this.el.appendChild(artifact)
-        artifact.setAttribute("position", {x:  artDist * multiplier, y: 1.52, z: 0.2})
+        artifact.setAttribute("position", {x:  artWidth * multiplier, y: 1.52, z: 0.2})
         if(this.data.orientation == "right")
         {
-          artifact.setAttribute("position", {x:  artDist * multiplier, y: 1.52, z: -0.2})
+          artifact.setAttribute("position", {x:  artWidth * multiplier, y: 1.52, z: -0.2})
           artifact.setAttribute('rotation', {x: 0, y: 180, z: 0})
 
           if(AFRAME.utils.device.isMobile())
           {
-              this.el.appendChild(this.initCheckPoint({x: artDist * multiplier, y: 0.1, z: -2}))
+              this.el.appendChild(this.initCheckPoint({x: artWidth * multiplier, y: 0.1, z: -2}))
           }
         }
         else
         {
           if(AFRAME.utils.device.isMobile())
           {
-              this.el.appendChild(this.initCheckPoint({x: artDist * multiplier, y: 0.1, z: 2}))
+              this.el.appendChild(this.initCheckPoint({x: artWidth * multiplier, y: 0.1, z: 2}))
           }
         }
     }
@@ -181,7 +180,7 @@ AFRAME.registerComponent('wall', {
 
     let ring = document.createElement("a-entity")
     ring.setAttribute("geometry", "primitive: ring; radiusInner: 0.6; radiusOuter: .8;")
-    ring.setAttribute("material", "color: #CCC; shader: flat;")
+    ring.setAttribute("material", "color: #1890ff; shader: flat;")
     ring.setAttribute("rotation", {x: -90, y:0, z:0})
     checkpoint.appendChild(ring)
 
@@ -211,16 +210,23 @@ AFRAME.registerComponent('floor', {
     if(data.text)
     {
       let direction = document.createElement('a-entity')
+      direction.setAttribute("checkpoint", '')
       direction.setAttribute('id', data.text.toLowerCase().replace(/[.,\/#!$%\^&\*;:{}=_`~()?]/g,"").trim().replace(/[ ’]/g, '-') + "_sign")
       let div = document.createElement('div')
       direction.setAttribute('htmlembed', {ppu: 256, styleSheetId: "malloci-style"})
       div.innerHTML = data.text
       direction.classList.add('sign')
       div.classList.add('section')
-      direction.setAttribute('position', {x: data.depth - 1, y: 0.1, z: -(data.width/2)})
+      direction.setAttribute('position', {x: data.depth - 1, y: 0.01, z: -(data.width/2)})
       direction.setAttribute('rotation', {x: -90, y: -90, z: 0})
       direction.appendChild(div)
       el.appendChild(direction)
+    }
+    if(AFRAME.utils.device.isMobile())
+    {
+      for(let step = 4; step < data.depth; step += 4){
+        this.el.appendChild(this.initCheckPoint({x: step, y: 0.1, z: -(data.width/2)}))
+      }
     }
 
     this.el.sceneEl.addEventListener('floor-update', () => {
@@ -245,6 +251,24 @@ AFRAME.registerComponent('floor', {
   tick: function (time, timeDelta) {
     // Do something on every scene tick or frame.
   },
+
+  initCheckPoint: function (position)
+  {
+    let checkpoint = document.createElement("a-cylinder")
+    checkpoint.setAttribute('height', 0.1)
+    checkpoint.setAttribute("checkpoint", '')
+    checkpoint.setAttribute('class', 'clickable')
+    checkpoint.setAttribute("position", position)
+    checkpoint.setAttribute("opacity", 0.0)
+
+    let ring = document.createElement("a-entity")
+    ring.setAttribute("geometry", "primitive: ring; radiusInner: 0.4; radiusOuter: .5;")
+    ring.setAttribute("material", "color: #1890ff; shader: flat;")
+    ring.setAttribute("rotation", {x: -90, y:0, z:0})
+    checkpoint.appendChild(ring)
+
+    return checkpoint
+  }
 });
 
 
@@ -301,8 +325,8 @@ AFRAME.registerComponent('rectframe', {
      let data = this.data;
 
      // create two geometries, one for vert, one for hor
-     let geomVert = new THREE.BoxBufferGeometry(0.04, data.width, 0.04);
-     let geomHor = new THREE.BoxBufferGeometry(0.04, data.height, 0.04);
+     let geomVert = new THREE.BoxBufferGeometry(0.04, data.width + 0.08, 0.04);
+     let geomHor = new THREE.BoxBufferGeometry(0.04, data.height + 0.08, 0.04);
       let mat
      // duplicate the geometries twice
      if(data.wordart)
@@ -348,8 +372,8 @@ AFRAME.registerComponent('rectframe', {
 
      this.el.sceneEl.addEventListener('frames-update', () => {
       
-      let geomVert = new THREE.BoxBufferGeometry(0.04, data.width, 0.04);
-     let geomHor = new THREE.BoxBufferGeometry(0.04, data.height, 0.04);
+      let geomVert = new THREE.BoxBufferGeometry(0.04, data.width + 0.08, 0.04);
+     let geomHor = new THREE.BoxBufferGeometry(0.04, data.height + 0.08, 0.04);
       let mat
      // duplicate the geometries twice
      if(data.wordart)
@@ -418,26 +442,69 @@ AFRAME.registerComponent('wall-art', {
 
     el.className = "frame"
     el.setAttribute("htmlembed", {ppu: 256, styleSheetId: "malloci-style"})
+    this.htmlembed = el.components.htmlembed
 
     let artClassNum =  6
+    el.emit('loading-art')
+
 
     switch(data.artifact.type)
     {
         case 'image':
             if(data.base64Mode) data.artifact.src = this.decode(data.artifact.src)
             if(data.debug) console.log("img art",data.artifact.src);
-            el.setAttribute("id", data.artifact.alt)
-            div.className = "vr-img"
-            el.className = "img-frame"
-            let image = document.createElement('img')
-            image.setAttribute('src', data.artifact.src)
+              let image = document.createElement('a-image')
+              image.setAttribute('src', data.artifact.src)
+              el.appendChild(image)
+              image.addEventListener('materialtextureloaded', function(e) {
+                el.emit('loading-art')
+                if(e.target != image) return
+                
+                let img = image.getObject3D('mesh').material.map.image
+                let wpx = img.width
+                let hpx = img.height
+                let war = wpx/hpx
+                let har = hpx/wpx
+                let w = 1
+                let h = 1
+                let wc = 60
+                if(4*har < 2.5)
+                {
+                  w = 4
+                  h = 4*har
+                }
+                else
+                {
+                  w = 2.5*war
+                  h= 2.5
+                  wc = Math.floor((w-0.1)*15)
+                }
 
-            let caption = document.createElement('div')
-            caption.className = "caption"
-            caption.innerHTML = data.artifact.alt
+                image.setAttribute('width', w)
+                image.setAttribute('height', h)
+                let cap = document.createElement('a-entity')
+                
+                let textBHeight = Math.ceil(data.artifact.alt.length/wc) * 0.091 + 0.1
 
-            div.appendChild(image)
-            div.appendChild(caption)
+
+                cap.setAttribute('geometry', {primitive:'plane', width: w, height: textBHeight})
+                cap.setAttribute('material', {color: '#282828', opacity: 0.4})
+                cap.setAttribute('text', {value: data.artifact.alt + '\n', wrapCount: wc, color:'#fff', xOffset: 0.02})
+                
+
+                cap.object3D.position.set(0, -h/2+textBHeight/2, 0.002)
+                
+                el.appendChild(cap)
+                if(data.artifact.frameSrc != null)
+                {
+                  el.setAttribute('rectframe', {height: h, width: w, src: data.artifact.frameSrc})
+                }
+                else
+                {
+                  el.setAttribute('rectframe', {height: h, width: w})
+                }
+
+              })
 
             break
         case 'block quote':
@@ -481,7 +548,6 @@ AFRAME.registerComponent('wall-art', {
     }
     
     el.appendChild(div)
-    this.htmlembed = el.components.htmlembed
     this.frame = false
   },
 
@@ -518,7 +584,7 @@ AFRAME.registerComponent('wall-art', {
       {
         this.el.setAttribute('rectframe', {height: this.htmlembed.height, width: this.htmlembed.width, wordart: true})
       }
-      else
+      else if(this.data.artifact.type != 'image')
       {
         if(this.data.artifact.frameSrc != null)
         {
@@ -544,6 +610,7 @@ AFRAME.registerComponent('malloci', {
       API: {type: 'string', default: null},
       hallWidth: {type: 'number', default: 8},
       wallHeight: {type: 'number', default: 5},
+      jumpButton: {type: 'boolean', default: true},
       base64Mode: {type: 'boolean', default: false},
       debug: {type: 'boolean', default: false}
     },
@@ -567,7 +634,7 @@ AFRAME.registerComponent('malloci', {
           cursor.setAttribute("raycaster", "objects: .clickable")
           cursor.setAttribute("position", {x: 0, y: 0, z: -1})
           cursor.setAttribute("geometry", "primitive: ring; radiusInner: 0.01; radiusOuter: 0.02;")
-          cursor.setAttribute("material", "color: #CCC; shader: flat;")
+          cursor.setAttribute("material", "color: #1890ff; shader: flat;")
           this._camera.appendChild(cursor)
       }
       
@@ -635,10 +702,58 @@ AFRAME.registerComponent('malloci', {
           this.build(start, end)
         })
         this.build()
-        if(!this.data.base64Mode)
+        if(data.jumpButton)
         {
           this.JumpTo()
         }
+        else
+        {
+          document.addEventListener('jump-to', function(e){
+            let rig = document.getElementById("rig")
+  
+            let section = e.detail
+            if(!section){
+              this.el.sceneEl.enterVR()
+              return
+            }
+            let roomsign = document.getElementById(section + "_sign")
+          
+            let position = new THREE.Vector3();
+            let v = new THREE.Vector3();
+  
+            let q = new THREE.Quaternion();
+            roomsign.object3D.getWorldQuaternion(q);
+  
+            let r = new THREE.Euler()
+            r.setFromQuaternion(q)
+            
+            position.setFromMatrixPosition(roomsign.object3D.matrixWorld);
+            
+            if(THREE.Math.radToDeg(r.z) < 0)
+            {
+              rig.setAttribute('position', {x: position.x - 4, y: 0, z: position.z})
+            }
+            else
+            {
+              rig.setAttribute('position', {x: position.x, y: 0, z: position.z - 4})
+            }
+            v.subVectors(rig.object3D.position, position).add(rig.object3D.position);
+            rig.object3D.lookAt(v)
+            rig.sceneEl.enterVR()
+          })
+        }
+        
+
+        this.timer = setTimeout(function(){
+          document.querySelector('#splash').style.display = 'none';
+        }, 3000);
+        this.el.sceneEl.addEventListener('loading-art', function(){
+          clearTimeout(this.timer);
+          document.querySelector('#splash').style.display = 'flex';
+          this.timer = setTimeout(function(){
+            document.querySelector('#splash').style.display = 'none';
+          }, 3000);
+        })
     },
 
     update: function(oldData)
@@ -713,23 +828,13 @@ AFRAME.registerComponent('malloci', {
         this.rot = 270
         this.left = 0
         this.right = 0
+        document.querySelector('#splash').style.display = 'flex';
         this.build()
       }
     },
 
     tick: function (time, timeDelta) {
-      // let dist = this._rig.object3D.position.distanceTo(this.trip_wire)        
       
-      // if(!this.tripped && dist < 30.0)
-      // {
-      //   console.log('tripped');
-      //   this.el.emit('tripped')
-      //   this.tripped = true
-      // }
-      // else if(dist > 30)
-      // {
-      //   this.tripped = false
-      // }
     },
 
     cropTheme: function (url, type) {
@@ -816,7 +921,7 @@ AFRAME.registerComponent('malloci', {
 
             let roomDepth = 0
 
-            roomDepth = room.artifacts.length * 3 + 3
+            roomDepth = room.artifacts.length * 4 + 3
 
             if(roomDepth < this._roomWidth)
             {
@@ -830,6 +935,7 @@ AFRAME.registerComponent('malloci', {
 
             let oddIndexedArtifacts = room.artifacts.filter((v,i) => { return i % 2})
             let evenIndexedArtifacts = room.artifacts.filter((v,i) => { return !(i % 2)})
+            let leftArt, rightArt
             
 
             let lengthr = 0
@@ -846,9 +952,6 @@ AFRAME.registerComponent('malloci', {
                     lengthl = roomDepth 
                     floorLength = lengthl
 
-                    rightWall = this.Wall(rightId, oddIndexedArtifacts, lengthr, this.xr, this.zr, this.rot, "right")
-                    leftWall = this.Wall(leftId, evenIndexedArtifacts, lengthl, this.xl, this.zl, this.rot)
-
                 }
                 else // turn this.right
                 {
@@ -857,10 +960,14 @@ AFRAME.registerComponent('malloci', {
                     lengthl = roomDepth + (this._roomWidth)
                     floorLength = lengthr
 
-                    rightWall = this.Wall(rightId, evenIndexedArtifacts, lengthr, this.xr, this.zr, this.rot, "right")
-                    leftWall = this.Wall(leftId, oddIndexedArtifacts, lengthl, this.xl, this.zl, this.rot)
-
                 }
+
+                leftArt = this.right == 0 ? evenIndexedArtifacts : oddIndexedArtifacts
+                rightArt = leftArt === evenIndexedArtifacts ? oddIndexedArtifacts : evenIndexedArtifacts
+
+                rightWall = this.Wall(rightId, rightArt, lengthr, this.xr, this.zr, this.rot, "right")
+                leftWall = this.Wall(leftId, leftArt, lengthl, this.xl, this.zl, this.rot)
+
 
                 rightWall.appendChild(this.floor("floor" + roomNum, this._roomWidth, floorLength, 0, 0, 0, this.rooms[roomNum].name))
                 leftWall.setAttribute('ceiling', {width: this._roomWidth, roomLength: lengthl, rotateY: -90})
@@ -890,9 +997,6 @@ AFRAME.registerComponent('malloci', {
                     floorLength = !this.left ? lengthl : roomDepth + this._roomWidth
                     this.left++
                     this.right = 0
-
-                  rightWall = this.Wall(rightId, evenIndexedArtifacts, lengthr, this.xr, this.zr, this.rot, "right")
-                  leftWall = this.Wall(leftId, oddIndexedArtifacts, lengthl, this.xl, this.zl, this.rot)
                 }
                 else // turn this.right
                 {
@@ -901,10 +1005,13 @@ AFRAME.registerComponent('malloci', {
                     floorLength = this.left > 0 ? lengthr : roomDepth + this._roomWidth
                     this.right++
                     this.left = 0
-
-                    rightWall = this.Wall(rightId, oddIndexedArtifacts, lengthr, this.xr, this.zr, this.rot, "right")
-                    leftWall = this.Wall(leftId, evenIndexedArtifacts, lengthl, this.xl, this.zl, this.rot)
                 }
+
+                leftArt = (this.right == 0 && this.left < 2) || this.right >= 2 ? evenIndexedArtifacts : oddIndexedArtifacts
+                rightArt = leftArt === evenIndexedArtifacts ? oddIndexedArtifacts : evenIndexedArtifacts
+
+                rightWall = this.Wall(rightId, rightArt, lengthr, this.xr, this.zr, this.rot, "right")
+                leftWall = this.Wall(leftId, leftArt, lengthl, this.xl, this.zl, this.rot)
 
                 if((this.right == 0 && this.left < 2) || this.right >= 2)
                 {
@@ -920,17 +1027,8 @@ AFRAME.registerComponent('malloci', {
                 this.el.appendChild(rightWall)
                 this.el.appendChild(leftWall)
 
-                // if(roomNum == last-1){
-                //   this.trip_wire = leftWall.object3D.position
-                //   console.log(this.trip_wire);
-                  
-                //   this.trip_wire_index = last
-                //   this.tripped = false
-                // } 
-
                 this.rot = this.rot <= 360 ? this.rot : this.rot - 360
                 this.rot = this.rot >= 0 ? this.rot : this.rot + 360
-
 
                 switch(this.rot)
                 {
@@ -969,18 +1067,19 @@ AFRAME.registerComponent('malloci', {
                 {
                     lengthr = roomDepth + this._roomWidth
                     lengthl = roomDepth
-
-                    rightWall = this.Wall(rightId, evenIndexedArtifacts, lengthr, this.xr, this.zr, this.rot, "right")
-                    leftWall = this.Wall(leftId, oddIndexedArtifacts, lengthl, this.xl, this.zl, this.rot)
                 }
                 else // turn this.right
                 {
                     lengthr = roomDepth
                     lengthl = roomDepth + this._roomWidth
-
-                    rightWall = this.Wall(rightId, oddIndexedArtifacts, lengthr, this.xr, this.zr, this.rot, "right")
-                    leftWall = this.Wall(leftId, evenIndexedArtifacts, lengthl, this.xl, this.zl, this.rot)
                 }
+
+                leftArt = (this.right == 0 && this.left < 2) || this.right >= 2 ? evenIndexedArtifacts : oddIndexedArtifacts
+                rightArt = leftArt === evenIndexedArtifacts ? oddIndexedArtifacts : evenIndexedArtifacts
+
+                rightWall = this.Wall(rightId, rightArt, lengthr, this.xr, this.zr, this.rot, "right")
+                leftWall = this.Wall(leftId, leftArt, lengthl, this.xl, this.zl, this.rot)
+
 
                 floorLength = roomDepth + this._roomWidth
                 
@@ -1072,11 +1171,10 @@ AFRAME.registerComponent('malloci', {
     {
       let jumpButton = document.createElement('div')
       let img = document.createElement('img')
-      img.setAttribute("src", Utils.Icon)
-
+      img.setAttribute("src", Utils.VRIcon)
       jumpButton.appendChild(img)
-      jumpButton.setAttribute("class", "jump")
-      this.el.sceneEl.parentElement.appendChild(jumpButton)
+      jumpButton.classList.add("jump")
+      document.body.appendChild(jumpButton)
 
       jumpButton.addEventListener('click', () => {
 
@@ -1090,7 +1188,7 @@ AFRAME.registerComponent('malloci', {
           );
         };
         
-        let htags = this.el.sceneEl.parentElement.querySelectorAll("h1, h2, h3, h4, h5, h6")
+        let htags = document.body.querySelectorAll("h1, h2, h3, h4, h5, h6")
         let section = null
         let index = 0
 
@@ -1104,16 +1202,12 @@ AFRAME.registerComponent('malloci', {
           }
         }
 
-        console.log(section);
+        if(!section){
+          this.el.sceneEl.enterVR()
+          return
+        }
         
-
         let roomsign = document.getElementById(section.getAttribute('id') + "_sign")
-        // if(!roomsign)
-        // {
-        //   start = (Math.floor(index/3)*3) + 1
-        //   end = start + 3
-        //   this.build(start, end)
-        // }
         
         let position = new THREE.Vector3();
         let v = new THREE.Vector3();
@@ -1141,3 +1235,38 @@ AFRAME.registerComponent('malloci', {
       })
     },
   });
+
+  AFRAME.registerComponent('instructions', {
+    schema: {
+      height: {type:'number'},
+      width: {type:'number'},
+      src: {type: 'string'},    
+    },
+  
+    init: function () {
+      // Do something when component first attached.
+      if(AFRAME.utils.device.checkHeadsetConnected())
+      {
+        let instr = document.createElement('a-image')
+        instr.setAttribute('src', this.data.src)
+        instr.setAttribute('width', this.data.width)
+        instr.setAttribute('height', this.data.height)
+        instr.setAttribute('opacity', 0.5)
+        this.el.appendChild(instr)
+      }
+      
+    },
+  
+    update: function () {
+      // Do something when component's data is updated.
+    },
+  
+    remove: function () {
+      // Do something the component or its entity is detached.
+    },
+  
+    tick: function (time, timeDelta) {
+      // Do something on every scene tick or frame.
+    }
+  });
+  

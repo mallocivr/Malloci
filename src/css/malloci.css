@@ -5,8 +5,12 @@
 } */
 
 .jump {
-	height: 40pt;
 	width: 40pt;
+	height: 40pt;
+	text-align: center;
+	font-size: xx-large;
+	font-weight: bold;
+	color: #0cc6ff;
 	padding: 5pt;
 	cursor: pointer;
 	background-color: #fff;
@@ -15,6 +19,10 @@
 	position: fixed;
 	bottom:40px;
 	right:40px;
+}
+
+.jump img{
+	width: 100%;
 }
 
 /* VR HTML Embed grid system */
@@ -147,7 +155,7 @@
 	display: inline-block;
 }
 
-.vr-img .caption{
+.caption{
 	display:block;
 	font-family: 'Montserrat', sans-serif;
     font-style: normal;

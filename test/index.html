@@ -9,6 +9,7 @@
     <script src="https://unpkg.com/aframe-geometry-merger-component/dist/aframe-geometry-merger-component.min.js"></script>
     <script src="js/aframe-teleport-controls.js"></script>
     <script src="js/aframe-extras.controls.js"></script>
+    <script src="js/aframe-extras.misc.min.js"></script>
     <script src="js/malloci.js"></script>
     <script src="js/htmlembed.js"></script>
     
@@ -21,7 +22,10 @@
       <div id="article"></div>
     </div>
     <div class="exhibit">
-      <a-scene background="color: rgb(135, 206, 235)">
+      <div id="splash">
+        <div class="loading"></div>
+      </div>
+      <a-scene embedded background="color: rgb(135, 206, 235)">
         <a-assets>
           <a-mixin id="checkpoint"></a-mixin>
           <a-mixin id="checkpoint-hovered" color="#6CEEB5"></a-mixin>
@@ -42,6 +46,11 @@
           <a-entity laser-controls="hand: left" raycaster="objects: .audio; far: 3" teleport-controls="collisionEntities: .scenery; drawForAllCollisions: false; landingMaxAngle: 45; button: trigger; cameraRig: #rig; teleportOrigin: #camera;"></a-entity>
           <a-entity laser-controls="hand: right" raycaster="objects: .audio; far: 3" teleport-controls="collisionEntities: .scenery; drawForAllCollisions: false; landingMaxAngle: 45; button: trigger; cameraRig: #rig; teleportOrigin: #camera;"></a-entity>
         </a-entity>
+        <a-entity 
+          instructions="src: img/instructions.png; width:2; height: 0.912"
+          position="2 1.5 6"
+          rotation="0 145 0"
+        ></a-entity>
       </a-scene>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
