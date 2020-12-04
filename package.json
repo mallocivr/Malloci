@@ -30,7 +30,7 @@
     "aframe-extras": "^6.1.0",
     "aframe-htmlembed-component": "^1.0.0",
     "external-ip": "^2.1.1",
-    "highlight.js": "^9.18.1",
+    "highlight.js": "^10.4.1",
     "live-server-https": "0.0.2",
     "seedrandom": "^3.0.5"
   }
